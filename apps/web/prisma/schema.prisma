@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User{
+  id String @id @default(uuid())
+  name String 
+  password String
+  workflows Workflow[]
+}
+
+model Workflow{
+  id String @id @default(uuid())
+  name String 
+  userId String
+  user User @relation(fields: [userId],references: [id] ,onDelete: Cascade)
+  status workflowStatus
+  nodes Node[]
+}
+
+model Node{
+  id String @id @default(uuid())
+  nodeId Int 
+  workflowId String
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  functionName String
+  type nodeType
+
+  @@unique([workflowId,nodeId])
+}
+
+enum nodeType{
+  MANUAL 
+  TRIGGER
+}
+
+enum workflowStatus{
+  ACTIVE
+  INACTIVE
+}

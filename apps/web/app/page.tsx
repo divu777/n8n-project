@@ -36,11 +36,6 @@ export default function App() {
       type: "addNodes",
     },
 
-    {
-      id: "h7",
-      position: { x: 300, y: 200 },
-      data: { label: "useee me " },
-    },
   ]);
 }, []);
 
