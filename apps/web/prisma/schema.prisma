@@ -38,7 +38,6 @@ model Node{
   workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   functionName String
   type nodeType
-
   @@unique([workflowId,nodeId])
 }
 
