@@ -1,23 +1,53 @@
 import React, { useState } from "react";
 import { Search, X } from "lucide-react";
 
-const Modal = ({
-  handleNewNode,
+const FirstNodeModal = ({
+  handleFirstNode,
   onClose,
 }: {
-  handleNewNode: (data:any) => any;
+  handleFirstNode: (data:any) => any;
   onClose: () => void;
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const triggers = [
     {
-      id: "LLM",
-      title: "Call to LLM",
+      id: "manual",
+      title: "Trigger manually",
       description:
-        "Sends a call to the LLM based on your query",
-      icon: "🤖",
-      node: "llm",
+        "Runs the flow on clicking a button in n8n. Good for getting started quickly",
+      icon: "👆",
+      node: "manualTrigger",
+    },
+    {
+      id: "schedule",
+      title: "On a schedule",
+      description: "Runs the flow every day, hour, or custom interval",
+      icon: "⏰",
+      node: "manualTrigger",
+    },
+    {
+      id: "webhook",
+      title: "On webhook call",
+      description: "Runs the flow on receiving an HTTP request",
+      icon: "🔗",
+      node: "manualTrigger",
+    },
+    {
+      id: "form",
+      title: "On form submission",
+      description:
+        "Generate webforms in n8n and pass their responses to the workflow",
+      icon: "📝",
+      node: "manualTrigger",
+    },
+    {
+      id: "workflow",
+      title: "When executed by another workflow",
+      description:
+        "Runs the flow when called by the Execute Workflow node from a different workflow",
+      icon: "🔄",
+      node: "manualTrigger",
     },
   ];
 
@@ -30,7 +60,7 @@ const Modal = ({
   const handleTriggerSelect = (trigger: any) => {
     console.log("Selected trigger:", trigger);
 
-    handleNewNode(trigger);
+    handleFirstNode(trigger);
     onClose();
   };
 
@@ -118,4 +148,4 @@ const Modal = ({
   );
 };
 
-export default Modal;
+export default FirstNodeModal;

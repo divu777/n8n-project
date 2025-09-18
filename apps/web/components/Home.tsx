@@ -1,11 +1,11 @@
-"use client"
-import Sidebar from "@/components/Sidebar"
-import { useRouter } from "next/navigation"
-import React, { useState } from "react"
+"use client";
+import Sidebar from "@/components/Sidebar";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
 const Home = ({ workflowsData }: { workflowsData: string[] }) => {
-  const [workflows, setWorkflows] = useState(workflowsData)
-  const router = useRouter()
+  const [workflows, setWorkflows] = useState(workflowsData);
+  const router = useRouter();
   return (
     <div className="flex h-screen w-screen bg-white text-gray-900">
       {/* Sidebar */}
@@ -13,7 +13,6 @@ const Home = ({ workflowsData }: { workflowsData: string[] }) => {
 
       {/* Main Content */}
       <div className="flex h-screen w-3/4 flex-col p-8 space-y-6 overflow-y-auto">
-        
         {/* Overview header */}
         <div>
           <h1 className="text-2xl font-semibold mb-1">Overview</h1>
@@ -62,7 +61,9 @@ const Home = ({ workflowsData }: { workflowsData: string[] }) => {
                 <div
                   key={idx}
                   className="bg-gray-50 border rounded-lg p-4 flex justify-between items-center"
-                  onClick={()=>router.push("/workflow/"+workflow)}
+                  onClick={() => {
+                    router.push("/workflow/" + workflow);
+                  }}
                 >
                   <div>
                     <h3 className="font-medium">{workflow}</h3>
@@ -81,7 +82,7 @@ const Home = ({ workflowsData }: { workflowsData: string[] }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

@@ -16,8 +16,7 @@ export const authOptions = {
           password:{label:"password",type:"password",placeholder:"****"}
         },
         async authorize(credentials,req){
-          console.log(credentials) 
-                    console.log(req) 
+          
 
           return{
             id:"2",
