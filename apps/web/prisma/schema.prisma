@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -17,11 +16,26 @@ datasource db {
 
 model User{
   id String @id @default(uuid())
-  name String 
+  username String 
   password String
   workflows Workflow[]
+  credentials Credentials[]
 }
 
+model Credentials{
+  id String @id @default(uuid())
+  apiKey String
+  baseUrl String
+  Provider LLMProvider
+  userId String
+  user User @relation(fields:  [userId],references: [id],onDelete: Cascade)
+}
+
+enum LLMProvider{
+  OpenAI
+  Anthropic
+  Gemini
+}
 model Workflow{
   id String @id @default(uuid())
   name String 
@@ -38,12 +52,14 @@ model Node{
   workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   functionName String
   type nodeType
+  config String?
   @@unique([workflowId,nodeId])
 }
 
 enum nodeType{
   MANUAL 
   TRIGGER
+  LLM
 }
 
 enum workflowStatus{
