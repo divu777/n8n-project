@@ -27,7 +27,7 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
   };
 
   const handleSaveConfig = async()=>{
-    const response = await axios.post("http://localhost:3001/api/node/")
+    const response = await axios.post("/api/node")
   }
 
   return (

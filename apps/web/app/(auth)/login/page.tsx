@@ -15,13 +15,13 @@ export default function LoginPage() {
     const res = await signIn("credentials", {
       username,
       password,
-      redirect: false
+      redirect: false,
     })
 
     if (res?.error) {
       setError("Invalid credentials")
     } else {
-      router.push("/home") // redirect to homepage after login
+      router.push("/") // redirect to homepage after login
     }
   }
 
