@@ -25,7 +25,6 @@ model User{
 model Credentials{
   id String @id @default(uuid())
   apiKey String
-  baseUrl String
   Provider LLMProvider
   userId String
   user User @relation(fields:  [userId],references: [id],onDelete: Cascade)

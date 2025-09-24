@@ -1,16 +1,20 @@
 "use client";
 import axios from "axios";
 import React, { useState } from "react";
+import AddCredentials from "./AddCredentials";
 
 const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
   const [selectedKey, setSelectedKey] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
+  const [provider,setProvider] = useState('OpenAI')
+  const [addnewCred,setaddNewCred] = useState(false)
   const [messages, setMessages] = useState<
     { role: string; content: string }[]
   >([{ role: "user", content: "" }]);
 
   const apiKeys = ["Key 1", "Key 2", "Key 3", "Add new credentials..."];
   const models = ["gpt-4", "gpt-3.5", "llama-3"];
+  const llmProviders = ['OpenAI','Anthropic','Gemini']
 
   const handleAddMessage = () => {
     setMessages([...messages, { role: "user", content: "" }]);
@@ -56,6 +60,7 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
                 const value = e.target.value;
                 if (value === "Add new credentials...") {
                   console.log("Add new credentials triggered");
+                  setaddNewCred(true)
                 } else {
                   setSelectedKey(value);
                 }
@@ -70,6 +75,11 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
               ))}
             </select>
           </div>
+
+          {/* Adding New Credentials */}
+              {addnewCred && (
+           <AddCredentials llmProviders={llmProviders} setProvider={setProvider} provider={provider} setaddNewCred={setaddNewCred}/>
+                     )}
 
           {/* Model Selection */}
           {selectedKey && (
