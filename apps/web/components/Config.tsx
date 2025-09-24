@@ -1,21 +1,49 @@
 "use client";
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddCredentials from "./AddCredentials";
+import { useSession } from "next-auth/react";
+
+export const getCredentials = async (userId: string) => {
+  const { data } = await axios.get(
+    "http://localhost:3000/api/credentials/" + userId
+  );
+  // console.log(JSON.stringify(data))
+  if (!data.success) {
+    return [];
+  }
+  return data.credentials;
+};
+
+interface credentials {
+  id: string;
+  Provider: string;
+  api_key: string;
+}
 
 const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
   const [selectedKey, setSelectedKey] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
-  const [provider,setProvider] = useState('OpenAI')
-  const [addnewCred,setaddNewCred] = useState(false)
-  const [messages, setMessages] = useState<
-    { role: string; content: string }[]
-  >([{ role: "user", content: "" }]);
+  const [provider, setProvider] = useState("OpenAI");
+  const [addnewCred, setaddNewCred] = useState(false);
+  const [apiKeys, setapiKeys] = useState<credentials[]>([]);
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>(
+    [{ role: "user", content: "" }]
+  );
 
-  const apiKeys = ["Key 1", "Key 2", "Key 3", "Add new credentials..."];
+  //const apiKeys = ["Key 1", "Key 2", "Key 3", "Add new credentials..."];
   const models = ["gpt-4", "gpt-3.5", "llama-3"];
-  const llmProviders = ['OpenAI','Anthropic','Gemini']
+  const llmProviders = ["OpenAI", "Anthropic", "Gemini"];
+  const session = useSession();
 
+  useEffect(() => {
+    if (!session || !session.data) {
+      return;
+    }
+    getCredentials(session.data.user.id).then((res) => {
+      setapiKeys(res);
+    });
+  }, [session]);
   const handleAddMessage = () => {
     setMessages([...messages, { role: "user", content: "" }]);
   };
@@ -30,9 +58,9 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
     setMessages(updated);
   };
 
-  const handleSaveConfig = async()=>{
-    const response = await axios.post("/api/node")
-  }
+  const handleSaveConfig = async () => {
+    const response = await axios.post("/api/node");
+  };
 
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-black/50  z-50 p-4">
@@ -40,7 +68,7 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 flex items-center justify-between">
           <h2 className="text-white font-semibold text-base">Configuration</h2>
-          <button 
+          <button
             onClick={() => setShowConfig(false)}
             className="text-white hover:text-gray-200 text-lg leading-none"
           >
@@ -60,7 +88,7 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
                 const value = e.target.value;
                 if (value === "Add new credentials...") {
                   console.log("Add new credentials triggered");
-                  setaddNewCred(true)
+                  setaddNewCred(true);
                 } else {
                   setSelectedKey(value);
                 }
@@ -69,17 +97,26 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
             >
               <option value="">Select API Key</option>
               {apiKeys.map((key) => (
-                <option key={key} value={key}>
-                  {key}
+                <option key={key.id} value={key.id}>
+                  {key.Provider}
                 </option>
               ))}
+              <option value="Add new credentials...">
+                Add new credentials...
+              </option>
             </select>
           </div>
 
           {/* Adding New Credentials */}
-              {addnewCred && (
-           <AddCredentials llmProviders={llmProviders} setProvider={setProvider} provider={provider} setaddNewCred={setaddNewCred}/>
-                     )}
+          {addnewCred && (
+            <AddCredentials
+              llmProviders={llmProviders}
+              setProvider={setProvider}
+              provider={provider}
+              setaddNewCred={setaddNewCred}
+              userId={session.data!.user.id}
+            />
+          )}
 
           {/* Model Selection */}
           {selectedKey && (
@@ -116,7 +153,7 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
                   + Add
                 </button>
               </div>
-              
+
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {messages.map((msg, index) => (
                   <div key={index} className="flex gap-2">

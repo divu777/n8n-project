@@ -1,86 +1,105 @@
 import prisma from "@/app/db";
+import { encrypt } from "@/lib/helper";
 import { NewCredentialsSchema } from "@repo/types";
 import { NextRequest, NextResponse } from "next/server";
 
-export const GET=async(_:NextRequest,{parmas}:{parmas:Promise<{userId:string}>})=>{
-    try {
-        const {userId} = await parmas
+export const GET = async (
+  _: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
+) => {
+  try {
+    const { userId } = await params;
 
-        const userExist = await prisma.user.findUnique({
-            where:{
-                id:userId
-            },
-            select:{
-                credentials:true
-            }
-        })
+    const userExist = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        credentials: true,
+      },
+    });
 
-        if(!userExist){
-            return NextResponse.json({
-                message:"UserId not valid",
-                success:false
-            })
-        }
-
-        return NextResponse.json({
-            message:"Fetched user available credentials",
-            credentials:userExist.credentials,
-            success:false
-        })
-        
-    } catch (error) {
-        console.log("Error in getting user credentials: "+error);
-        return NextResponse.json({
-            "message":"Error in getting user credentials",
-            "success":false
-        })
+    if (!userExist) {
+      return NextResponse.json({
+        message: "UserId not valid",
+        success: false,
+      });
     }
-}
 
-export const POST=async(_:NextRequest,{parmas}:{parmas:Promise<{userId:string}>})=>{
-    try {
-        const {userId} = await parmas
+    return NextResponse.json({
+      message: "Fetched user available credentials",
+      credentials: userExist.credentials,
+      success: true,
+    });
+  } catch (error) {
+    console.log("Error in getting user credentials: " + error);
+    return NextResponse.json({
+      message: "Error in getting user credentials",
+      success: false,
+    });
+  }
+};
 
-        const body = await _.json()
+export const POST = async (
+  _: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
+) => {
+  try {
+    const userId = (await params).userId;
 
-        const userExist = await prisma.user.findUnique({
-            where:{
-                id:userId
-            },
-            select:{
-                credentials:true
-            }
-        })
+    const body = await _.json();
 
-        if(!userExist){
-            return NextResponse.json({
-                message:"UserId not valid",
-                success:false
-            })
-        }
+    const userExist = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        credentials: true,
+      },
+    });
 
-        const validInputs = NewCredentialsSchema.safeParse(body)
-
-        if(!validInputs.success){
-            return NextResponse.json({
-                message:"Invalid inputs",
-                success:false
-            })
-        }
-
-        const newCreds = await prisma.credentials.create({
-            data:{
-                userId,
-                apiKey:validInputs.data.api_key,
-                Provider:validInputs.data.provider
-            }
-        })
-        
-    } catch (error) {
-        console.log("Error in getting user credentials: "+error);
-        return NextResponse.json({
-            "message":"Error in getting user credentials",
-            "success":false
-        })
+    if (!userExist) {
+      return NextResponse.json({
+        message: "UserId not valid",
+        success: false,
+      });
     }
-}
+
+    const validInputs = NewCredentialsSchema.safeParse(body);
+
+    if (!validInputs.success) {
+      return NextResponse.json({
+        message: "Invalid inputs",
+        success: false,
+      });
+    }
+
+    const encryptedAPI = encrypt(validInputs.data.api_key);
+
+    const newCreds = await prisma.credentials.create({
+      data: {
+        userId,
+        apiKey: encryptedAPI,
+        Provider: validInputs.data.provider,
+      },
+    });
+
+    if (!newCreds) {
+      return NextResponse.json({
+        message: "error in adding new creds",
+        success: false,
+      });
+    }
+
+    return NextResponse.json({
+      message: "Added new creds for user successfully",
+      success: true,
+    });
+  } catch (error) {
+    console.log("Error in getting user credentials: " + error);
+    return NextResponse.json({
+      message: "Error in getting user credentials",
+      success: false,
+    });
+  }
+};

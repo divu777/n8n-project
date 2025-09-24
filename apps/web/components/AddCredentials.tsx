@@ -7,23 +7,31 @@ const AddCredentials = ({
   llmProviders,
   setProvider,
   provider,
-  setaddNewCred
+  setaddNewCred,
+  userId
 }: {
   llmProviders: string[]
   setProvider: React.Dispatch<React.SetStateAction<string>>
   provider: string,
   setaddNewCred:React.Dispatch<React.SetStateAction<boolean>>
+  userId:string
 }) => {
-    const session = useSession()
 
-    if(!session || !session.data){
-        return
-    }
-    
+    //console.log(JSON.stringify(session.data))
+
     const apiKeyRef = useRef<HTMLInputElement>(null)
     const handleAddNewCred = async ()=>{
+        console.log("P"+provider)
+        console.log("a"+apiKeyRef.current?.value)
         if(provider && apiKeyRef.current?.value){
-            const {data} =await axios.post("http://localhost:3000/api/credentials/")
+            const {data} =await axios.post("http://localhost:3000/api/credentials/"+userId,{
+                provider,
+                api_key:apiKeyRef.current.value
+            })
+
+            console.log(JSON.stringify(data)+"=============")
+
+
         }
     }
   return (
@@ -76,9 +84,9 @@ const AddCredentials = ({
           </button>
           <button
             className="px-4 py-2 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-            onClick={handleAddNewCred}
+            onClick={()=>handleAddNewCred()}
           >
-            Save
+            Savey
           </button>
         </div>
       </div>
