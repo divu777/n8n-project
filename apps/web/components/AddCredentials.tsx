@@ -1,24 +1,21 @@
 'use client'
 import axios from 'axios'
 import { useSession } from 'next-auth/react'
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 
 const AddCredentials = ({
   llmProviders,
-  setProvider,
-  provider,
   setaddNewCred,
   userId
 }: {
   llmProviders: string[]
-  setProvider: React.Dispatch<React.SetStateAction<string>>
-  provider: string,
   setaddNewCred:React.Dispatch<React.SetStateAction<boolean>>
   userId:string
 }) => {
 
     //console.log(JSON.stringify(session.data))
-
+      const [provider, setProvider] = useState("OpenAI");
+    
     const apiKeyRef = useRef<HTMLInputElement>(null)
     const handleAddNewCred = async ()=>{
         console.log("P"+provider)
@@ -31,7 +28,7 @@ const AddCredentials = ({
 
             console.log(JSON.stringify(data)+"=============")
 
-
+            setaddNewCred(false)
         }
     }
   return (

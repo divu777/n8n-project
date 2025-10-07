@@ -40,6 +40,8 @@ if(!session || !session.data){
           }
           console.log(JSON.stringify(data))
         }
+                    setModal(false)
+
   }
   return (
     <div className="flex h-screen w-screen bg-white text-gray-900">

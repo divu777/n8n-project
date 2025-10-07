@@ -19,7 +19,7 @@
     "next.config.js",
     ".next/types/**/*.ts",
     "types/**/*.d.ts"
-  ],
+, "langgraph/nodes.mts"  ],
   "exclude": [
     "node_modules"
   ]

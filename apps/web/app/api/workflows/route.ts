@@ -56,16 +56,20 @@ export const POST = async (req: NextRequest) => {
       });
     }
 
-    await prisma.workflow.create({
+    const newWorkflow= await prisma.workflow.create({
       data: {
         ...validInputs.data,
       },
+      select:{
+        name:true
+      }
     });
 
     return NextResponse.json({
       message: "created new workflow",
       success: true,
       statue: 200,
+      data:newWorkflow
     });
   } catch (error) {
     console.log("Error in creating new workflow" + error);

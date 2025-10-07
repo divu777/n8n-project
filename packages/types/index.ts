@@ -1,4 +1,8 @@
 import z from 'zod/v4'
+import { Annotation, MessagesAnnotation,addMessages, messagesStateReducer, type Messages } from "@langchain/langgraph";
+import type { BaseMessage } from "@langchain/core/messages";
+import type { Prisma } from "@prisma/client";
+
 export const NewWorflowSchema = z.object({
     name:z.string(),
     userId:z.string(),
@@ -16,3 +20,31 @@ export const NewCredentialsSchema = z.object({
     api_key:z.string()
 }
 )
+
+
+
+export const StateAnnotation = Annotation.Root({
+    user_query: Annotation<string>,
+    ...MessagesAnnotation.spec,
+
+})
+
+// const MessageSchema = z.object({
+//     role:z.enum(["user","assistant","system"]),
+//     content:z.string()
+// })
+
+
+
+
+export const NodeDataSchema = z.object({
+    //api_key:z.string(),
+   // provider:z.enum(['OpenAI','Anthropic','Gemini']),
+    // model:z.string(),
+    // messages:z.array(MessageSchema),
+    workflowId:z.string(),
+    type:z.enum(["MANUAL","TRIGGER","LLM"]),
+    config:z.string().optional(),
+    xCoordinate:z.number(),
+    yCoordinate:z.number()
+})

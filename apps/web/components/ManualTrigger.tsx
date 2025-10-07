@@ -1,15 +1,29 @@
 "use client";
 import { Handle, Position } from "@xyflow/react";
-import { Plus, Pointer } from "lucide-react";
-import React from "react";
+import { Play, Plus, Pointer } from "lucide-react";
+import React, { useState } from "react";
 
-const ManualTrigger = ({data}:{data:any}) => {
-    const {setAddNewNodeModal,hasChild} = data
+const ManualTrigger = ({ data }: { data: any }) => {
+  const { setAddNewNodeModal, hasChild } = data;
+    const [showMenu, setShowMenu] = useState(false);
+    let hideTimeout: NodeJS.Timeout;
+
+    const handleMouseEnter = () => {
+    clearTimeout(hideTimeout);
+    setShowMenu(true);
+  };
+
+   const handleMouseLeave = () => {
+    hideTimeout = setTimeout(() => setShowMenu(false), 200); // add small delay
+  };
 
   return (
-    <div className="relative flex items-center">
+    <div className="relative flex items-center"
+       onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {/* Manual Trigger box */}
-            <Handle type="source" position={Position.Right} className="!bg-red-400" />
+      <Handle type="source" position={Position.Right} className="!bg-red-400" />
 
       <div
         className="
@@ -27,6 +41,29 @@ const ManualTrigger = ({data}:{data:any}) => {
           Manual Trigger
         </span>
       </div>
+
+       {showMenu && (
+           <div
+          className="
+            absolute left-0 top-full mt-1 w-20
+            rounded-md border border-gray-300
+            bg-red-500 shadow-sm
+            flex items-center gap-1
+            px-2 py-1
+            text-white
+            cursor-pointer
+            hover:bg-red-600 hover:border-white
+            transition-all
+            z-50
+          "
+          onClick={() => console.log("hee")}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <Play className="w-3 h-3" />
+          <span className="text-xs font-light">Execute</span>
+        </div>
+      )}
 
       {/* Connector line */}
       {!hasChild && (

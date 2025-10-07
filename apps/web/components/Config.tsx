@@ -3,47 +3,33 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import AddCredentials from "./AddCredentials";
 import { useSession } from "next-auth/react";
+import { useCredentials } from "@/lib/hooks/useCredentials";
 
-export const getCredentials = async (userId: string) => {
-  const { data } = await axios.get(
-    "http://localhost:3000/api/credentials/" + userId
-  );
-  // console.log(JSON.stringify(data))
-  if (!data.success) {
-    return [];
-  }
-  return data.credentials;
-};
-
-interface credentials {
-  id: string;
-  Provider: string;
-  api_key: string;
+interface Message {
+  role: string;
+  content: string;
 }
 
-const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
-  const [selectedKey, setSelectedKey] = useState("");
-  const [selectedModel, setSelectedModel] = useState("");
-  const [provider, setProvider] = useState("OpenAI");
-  const [addnewCred, setaddNewCred] = useState(false);
-  const [apiKeys, setapiKeys] = useState<credentials[]>([]);
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>(
-    [{ role: "user", content: "" }]
-  );
+const MODELS: Record<string, string[]> = {
+  OpenAI: ["gpt-3.5-turbo", "gpt-4", "gpt-4o"],
+  Anthropic: ["Claude-2", "Claude-Instant", "Claude-Next"],
+  Gemini: ["Gemini Pro", "Gemini Ultra", "Gemini Light"],
+};
 
-  //const apiKeys = ["Key 1", "Key 2", "Key 3", "Add new credentials..."];
-  const models = ["gpt-4", "gpt-3.5", "llama-3"];
-  const llmProviders = ["OpenAI", "Anthropic", "Gemini"];
+const LLM_PROVIDERS = Object.keys(MODELS);
+
+const Config = ({ setShowConfig ,workflowId}: { setShowConfig: (x: boolean) => any ,workflowId:string}) => {
   const session = useSession();
+  const [selectedKey, setSelectedKey] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState("");
+  const [selectedModel, setSelectedModel] = useState("");
+  const [addnewCred, setaddNewCred] = useState(false);
+  const apiKeys = useCredentials(session.data?.user.id);
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "user", content: "" },
+  ]);
 
-  useEffect(() => {
-    if (!session || !session.data) {
-      return;
-    }
-    getCredentials(session.data.user.id).then((res) => {
-      setapiKeys(res);
-    });
-  }, [session]);
+
   const handleAddMessage = () => {
     setMessages([...messages, { role: "user", content: "" }]);
   };
@@ -58,8 +44,24 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
     setMessages(updated);
   };
 
+
+
   const handleSaveConfig = async () => {
-    const response = await axios.post("/api/node");
+    console.log("herr")
+    const {data} = await axios.post("/api/node",{
+      workflowId,
+      type:'LLM',
+      config:JSON.stringify({messages,
+      api_key_id:selectedKey,
+      provider:selectedProvider,
+      model:selectedModel})
+    });
+
+    console.log(JSON.stringify(data)+"-------")
+
+    if(data.success){
+      setShowConfig(false)
+    }
   };
 
   return (
@@ -86,18 +88,26 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
               value={selectedKey}
               onChange={(e) => {
                 const value = e.target.value;
+                const provider =
+                  e.target.selectedOptions[0]!.getAttribute("data-provider");
+
                 if (value === "Add new credentials...") {
                   console.log("Add new credentials triggered");
                   setaddNewCred(true);
                 } else {
                   setSelectedKey(value);
+                  setSelectedProvider(provider!);
                 }
               }}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200 bg-white"
             >
               <option value="">Select API Key</option>
               {apiKeys.map((key) => (
-                <option key={key.id} value={key.id}>
+                <option
+                  key={key.id}
+                  value={key.id}
+                  data-provider={key.Provider}
+                >
                   {key.Provider}
                 </option>
               ))}
@@ -110,9 +120,7 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
           {/* Adding New Credentials */}
           {addnewCred && (
             <AddCredentials
-              llmProviders={llmProviders}
-              setProvider={setProvider}
-              provider={provider}
+              llmProviders={LLM_PROVIDERS}
               setaddNewCred={setaddNewCred}
               userId={session.data!.user.id}
             />
@@ -130,7 +138,7 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200 bg-white"
               >
                 <option value="">Select Model</option>
-                {models.map((model) => (
+                {MODELS[selectedProvider]!.map((model) => (
                   <option key={model} value={model}>
                     {model}
                   </option>
@@ -165,7 +173,7 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
                       className="w-20 rounded-md border border-gray-300 px-2 py-1 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-200 bg-white"
                     >
                       <option value="user">User</option>
-                      <option value="ai">AI</option>
+                      <option value="assistant">AI</option>
                       <option value="system">System</option>
                     </select>
                     <input
@@ -192,7 +200,9 @@ const Config = ({ setShowConfig }: { setShowConfig: (x: boolean) => any }) => {
           >
             Cancel
           </button>
-          <button className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+          <button
+          onClick={()=>handleSaveConfig()}
+          className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors">
             Save
           </button>
         </div>

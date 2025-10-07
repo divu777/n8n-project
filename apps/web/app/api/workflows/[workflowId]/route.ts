@@ -8,6 +8,9 @@ export const GET = async(req:NextRequest,{params}:{params:Promise<{workflowId:st
         const workflowData = await prisma.workflow.findUnique({
             where:{
                 id:workflowId
+            },
+            include:{
+                nodes:true
             }
         })
 

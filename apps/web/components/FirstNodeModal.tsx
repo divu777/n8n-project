@@ -3,7 +3,7 @@ import { Search, X } from "lucide-react";
 
 const FirstNodeModal = ({
   handleFirstNode,
-  onClose,
+  onClose
 }: {
   handleFirstNode: (data:any) => any;
   onClose: () => void;
@@ -17,21 +17,21 @@ const FirstNodeModal = ({
       description:
         "Runs the flow on clicking a button in n8n. Good for getting started quickly",
       icon: "👆",
-      node: "manualTrigger",
+      node: "manual",
     },
     {
       id: "schedule",
       title: "On a schedule",
       description: "Runs the flow every day, hour, or custom interval",
       icon: "⏰",
-      node: "manualTrigger",
+      node: "manual",
     },
     {
       id: "webhook",
       title: "On webhook call",
       description: "Runs the flow on receiving an HTTP request",
       icon: "🔗",
-      node: "manualTrigger",
+      node: "manual",
     },
     {
       id: "form",
@@ -39,7 +39,7 @@ const FirstNodeModal = ({
       description:
         "Generate webforms in n8n and pass their responses to the workflow",
       icon: "📝",
-      node: "manualTrigger",
+      node: "manual",
     },
     {
       id: "workflow",
@@ -47,7 +47,7 @@ const FirstNodeModal = ({
       description:
         "Runs the flow when called by the Execute Workflow node from a different workflow",
       icon: "🔄",
-      node: "manualTrigger",
+      node: "manual",
     },
   ];
 

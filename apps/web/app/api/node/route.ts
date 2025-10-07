@@ -1,0 +1,143 @@
+import prisma from "@/app/db";
+import { authOptions } from "@/lib/auth";
+import { NodeDataSchema } from "@repo/types";
+import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
+
+export const POST=async(_:NextRequest)=>{
+    try {
+        const session = await getServerSession(authOptions)
+        //console.log(JSON.stringify(session)+"=====")
+        const body = await _.json()
+
+       console.log(JSON.stringify(body))
+        if(!session || !session.user || !session.user.id){
+            return NextResponse.json({
+                message:"Unauthorized",
+                success:false
+            })
+        }
+
+        const userExist = await prisma.user.findUnique({
+            where:{
+                id:session.user.id
+            }
+        })
+
+        if(!userExist){
+
+            return NextResponse.json({
+                message:"User does not exist",
+                success:false
+            })
+        }
+
+        const validInputs = NodeDataSchema.safeParse(body)
+
+        if(!validInputs.success){
+            return NextResponse.json({
+                message:"Invalid inputs",
+                success:false,
+                error:validInputs.error
+            })
+        }
+
+        const workflowExist = await prisma.workflow.findUnique({
+            where:{
+                id:validInputs.data.workflowId
+            },
+            select:{
+                nodes:true
+            }
+        })
+
+        if(!workflowExist){
+            return NextResponse.json({
+                message:"Workflow does not exist",
+                success:false
+            })
+        }
+
+        await prisma.node.create({
+            data:{
+                workflowId:validInputs.data.workflowId,
+                config:validInputs.data.config,
+                type:validInputs.data.type,
+                nodeId: workflowExist.nodes.length +1,
+                xCoordinate:validInputs.data.xCoordinate,
+                yCoordinate:validInputs.data.yCoordinate
+            }
+        })
+
+        return NextResponse.json({
+            message:"Node created successfully",
+            success:true
+        })
+
+
+        
+    } catch (error) {
+        console.log("Error in Saving Node Configuration: "+error);
+        return NextResponse.json({
+            message:"Error in saving node configuration",
+            success:false
+        })
+    }
+}
+
+
+export const PUT = async(req:NextRequest)=>{
+    try {
+        const body = await req.json()
+
+        const nodeExist = await prisma.node.findUnique({
+            where:{
+                workflowId_nodeId:{
+                    workflowId:body.workflowId,
+                    nodeId:body.nodeId
+                }
+            }
+        })
+
+        if(!nodeExist){
+            return NextResponse.json({
+                message:"Node does not exist",
+                success:false
+            })
+        }
+
+        let configJson = nodeExist.config ? JSON.parse(nodeExist.config) : null
+
+        if(configJson){
+            configJson= JSON.stringify({
+                ...configJson,
+                ...body.config
+            })
+        }
+
+
+        const nodeData = await prisma.node.update({
+            where:{
+                workflowId_nodeId:{
+                    workflowId:body.workflowId,
+                    nodeId:body.nodeId
+                }
+            },
+            data:{
+                config:configJson
+            }
+        })
+    } catch (error) {
+        console.log("Error in updating the nodes: "+error);
+        return NextResponse.json({
+            message:"Error in updating nodes",
+            success:false
+        })
+    }
+}
+
+/**
+ right now the issue will arise with you submitting the same config 2 times leads to creating nodes 2 , even tho you have one on the UI
+ So what i think your past self is that you fetch node and edge data from the backend for this workflow to be shown in the UI and
+ if you do the same mistake as above nodeId should be passed for the old node so we know its put request and make post when new node
+ */

@@ -24,17 +24,59 @@ import axios from "axios";
 
 const nodeTypes = {
   addNode: AddNode,
-  manualTrigger: ManualTrigger,
-  llm: LLM,
+  MANUAL: ManualTrigger,
+  LLM: LLM,
 };
 
 export default function App() {
   const { workflowId } = useParams();
 
+  interface Nodes {
+    id: string;
+    nodeId: string;
+    type: string;
+    xCoordinate: number;
+    yCoordinate: number;
+    data: JSON;
+    config?: string;
+  }
+
   const fetchWorflowData = async () => {
     const { data } = await axios.get(
       "http://localhost:3000/api/workflows/" + workflowId
     );
+
+    const nodesExist: Nodes[] = data.nodes;
+
+    if (nodesExist && nodesExist.length > 0) {
+      const nodes = nodesExist.map((node) => {
+        const data = node.data;
+        return {
+          id: String(node.nodeId),
+          position: {
+            x: node.xCoordinate,
+            y: node.yCoordinate,
+          },
+          data: {
+            ...data,
+            setAddNewNodeModal,
+          },
+          type: node.type,
+        };
+      });
+
+      setNodes(nodes);
+    }
+    if (!data.data.nodes || data.data.nodes.length === 0) {
+      setNodes([
+        {
+          id: "h2",
+          position: { x: 100, y: 0 },
+          data: { setFirseNodeModal },
+          type: "addNode",
+        },
+      ]);
+    }
 
     console.log(JSON.stringify(data) + "----------");
   };
@@ -48,19 +90,6 @@ export default function App() {
   const [addNewNodemodal, setAddNewNodeModal] = useState(false);
   const [edges, setEdges] = useState<any[]>([]);
   const [showConfig, setShowConfig] = useState(false);
-
-  useEffect(() => {
-    if (nodes.length == 0) {
-      setNodes([
-        {
-          id: "h2",
-          position: { x: 100, y: 0 },
-          data: { setFirseNodeModal },
-          type: "addNode",
-        },
-      ]);
-    }
-  }, []);
 
   useEffect(() => {
     setNodes((nds) =>
@@ -93,9 +122,25 @@ export default function App() {
         },
         type: node,
       };
+      axios.post("http://localhost:3000/api/node", {
+        nodeId: newNode.id,
+        xCoordinate: newX,
+        yCoordinate: newY,
+        type: data.id.toUpperCase(),
+        workflowId,
+        data: {
+          hasChild: false,
+        },
+      });
 
       if (lastNode) {
         lastNode.data = { ...lastNode.data, hasChild: true };
+        axios.put("http://localhost:3000/api/node", {
+          nodeId: lastNode.id,
+          data: {
+            hasChild: true,
+          },
+        });
       }
 
       return [...prev.slice(0, -1), lastNode, newNode];
@@ -111,8 +156,27 @@ export default function App() {
     ]);
   };
 
-  const handleFirstNode = (data: any) => {
+  const handleFirstNode = async (data: {
+    id: string;
+    title: string;
+    description: string;
+    icon: string;
+    node: string;
+  }) => {
     const { node } = data;
+    const respone = await axios.post("http://localhost:3000/api/node", {
+      type: data.id.toUpperCase(),
+      workflowId,
+      xCoordinate: 100,
+      yCoordinate: 0,
+      config: JSON.stringify({
+        data: {
+          hasChild: false,
+        },
+      }),
+    });
+
+    console.log(JSON.stringify(respone.data) + "-------->>>");
     setNodes([
       {
         id: `n1`,
@@ -148,7 +212,7 @@ export default function App() {
             id: "h2",
             position: { x: 100, y: 0 },
             data: { setFirseNodeModal },
-            type: "addNodes",
+            type: "addNode",
           },
         ];
       }
@@ -268,7 +332,12 @@ export default function App() {
         />
       )}
 
-      {showConfig && <Config setShowConfig={setShowConfig} />}
+      {showConfig && (
+        <Config
+          setShowConfig={setShowConfig}
+          workflowId={workflowId as string}
+        />
+      )}
     </div>
   );
 }
