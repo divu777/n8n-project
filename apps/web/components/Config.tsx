@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import AddCredentials from "./AddCredentials";
 import { useSession } from "next-auth/react";
 import { useCredentials } from "@/lib/hooks/useCredentials";
-
+import {nodeTypes} from "@/app/workflow/[workflowId]/page"
 interface Message {
   role: string;
   content: string;
@@ -18,7 +18,7 @@ const MODELS: Record<string, string[]> = {
 
 const LLM_PROVIDERS = Object.keys(MODELS);
 
-const Config = ({ setShowConfig ,workflowId}: { setShowConfig: (x: boolean) => any ,workflowId:string}) => {
+const Config = ({ setShowConfig ,workflowId,handleSaveConfig}: { setShowConfig: (x: boolean) => any ,workflowId:string,handleSaveConfig:(x?:any)=>void}) => {
   const session = useSession();
   const [selectedKey, setSelectedKey] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("");
@@ -46,22 +46,10 @@ const Config = ({ setShowConfig ,workflowId}: { setShowConfig: (x: boolean) => a
 
 
 
-  const handleSaveConfig = async () => {
-    console.log("herr")
-    const {data} = await axios.post("/api/node",{
-      workflowId,
-      type:'LLM',
-      config:JSON.stringify({messages,
+  const handleSaveConfiguration = async () => {
+    handleSaveConfig({messages,
       api_key_id:selectedKey,
-      provider:selectedProvider,
       model:selectedModel})
-    });
-
-    console.log(JSON.stringify(data)+"-------")
-
-    if(data.success){
-      setShowConfig(false)
-    }
   };
 
   return (
@@ -196,12 +184,14 @@ const Config = ({ setShowConfig ,workflowId}: { setShowConfig: (x: boolean) => a
         <div className="bg-gray-50 px-4 py-3 flex justify-end gap-2 border-t border-gray-200">
           <button
             className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
-            onClick={() => setShowConfig(false)}
+            onClick={() => {
+              handleSaveConfig()
+              setShowConfig(false)}}
           >
             Cancel
           </button>
           <button
-          onClick={()=>handleSaveConfig()}
+          onClick={handleSaveConfiguration}
           className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors">
             Save
           </button>

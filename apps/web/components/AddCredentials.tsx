@@ -21,12 +21,12 @@ const AddCredentials = ({
         console.log("P"+provider)
         console.log("a"+apiKeyRef.current?.value)
         if(provider && apiKeyRef.current?.value){
-            const {data} =await axios.post("http://localhost:3000/api/credentials/"+userId,{
-                provider,
-                api_key:apiKeyRef.current.value
-            })
+            // const {data} =await axios.post("http://localhost:3000/api/credentials/"+userId,{
+            //     provider,
+            //     api_key:apiKeyRef.current.value
+            // })
 
-            console.log(JSON.stringify(data)+"=============")
+            // console.log(JSON.stringify(data)+"=============")
 
             setaddNewCred(false)
         }

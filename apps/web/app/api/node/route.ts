@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const POST=async(_:NextRequest)=>{
     try {
         const session = await getServerSession(authOptions)
-        //console.log(JSON.stringify(session)+"=====")
+        console.log(JSON.stringify(session)+"=====")
         const body = await _.json()
 
        console.log(JSON.stringify(body))
@@ -61,11 +61,12 @@ export const POST=async(_:NextRequest)=>{
         await prisma.node.create({
             data:{
                 workflowId:validInputs.data.workflowId,
-                config:validInputs.data.config,
+                config:validInputs.data.config!??  null,
                 type:validInputs.data.type,
-                nodeId: workflowExist.nodes.length +1,
+                nodeId: validInputs.data.nodeId,
                 xCoordinate:validInputs.data.xCoordinate,
-                yCoordinate:validInputs.data.yCoordinate
+                yCoordinate:validInputs.data.yCoordinate,
+                data:validInputs.data.data!
             }
         })
 

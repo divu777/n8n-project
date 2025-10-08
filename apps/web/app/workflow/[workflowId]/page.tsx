@@ -22,7 +22,7 @@ import { useParams } from "next/navigation";
 import Config from "@/components/Config";
 import axios from "axios";
 
-const nodeTypes = {
+export const nodeTypes = {
   addNode: AddNode,
   MANUAL: ManualTrigger,
   LLM: LLM,
@@ -41,15 +41,29 @@ export default function App() {
     config?: string;
   }
 
+  type nodesType = {
+    id:string,
+    type:string,
+    data:{
+      hasChild:boolean
+    }
+  }
+
+  
+
   const fetchWorflowData = async () => {
     const { data } = await axios.get(
       "http://localhost:3000/api/workflows/" + workflowId
     );
+        console.log(JSON.stringify(data)+"------nodeexit")
 
-    const nodesExist: Nodes[] = data.nodes;
+
+    const nodesExist = data.nodes;
+    console.log(JSON.stringify(nodesExist)+"------nodeexit")
 
     if (nodesExist && nodesExist.length > 0) {
       const nodes = nodesExist.map((node) => {
+        console.log(JSON.stringify(node)+"------node")
         const data = node.data;
         return {
           id: String(node.nodeId),
@@ -67,7 +81,7 @@ export default function App() {
 
       setNodes(nodes);
     }
-    if (!data.data.nodes || data.data.nodes.length === 0) {
+    if (!data.nodes || data.nodes.length === 0) {
       setNodes([
         {
           id: "h2",
@@ -78,7 +92,7 @@ export default function App() {
       ]);
     }
 
-    console.log(JSON.stringify(data) + "----------");
+    console.log(JSON.stringify(data) + "---------g-");
   };
 
   useEffect(() => {
@@ -90,6 +104,65 @@ export default function App() {
   const [addNewNodemodal, setAddNewNodeModal] = useState(false);
   const [edges, setEdges] = useState<any[]>([]);
   const [showConfig, setShowConfig] = useState(false);
+  const [selectedNode , setSelectedNode] = useState<string|null>(null)
+
+  const handlSaveNodeConfig =async (data?: any)=>{
+        let newNodeId=`n${nodes.length+1}`
+        const config = data ? data : null
+        const selectedNode = nodes.find((n) => n.selected === true);
+    
+         const lastNode = selectedNode || nodes[nodes.length - 1];
+          const newX = lastNode ? lastNode.position.x + 200 : 0;
+          const newY = lastNode ? lastNode.position.y : 0;
+
+          const newNode = {
+    id: newNodeId,
+    position: { x: newX, y: newY },
+    data: {
+      label: `Node${nodes.length + 1}`,
+      hasChild: false,
+      setAddNewNodeModal,
+    },
+    type: selectedNode,
+  };
+      setNodes((prev) => {
+    const updatedNodes = prev.map((n) =>
+      n.id === lastNode?.id
+        ? { ...n, data: { ...n.data, hasChild: true } }
+        : n
+    );
+    return [...updatedNodes, newNode];
+  });
+
+  setEdges((prev: any[]) => [
+    ...prev,
+    {
+      id: `${selectedNode?.id || `n${nodes.length}`}-${newNodeId}`,
+      source: selectedNode?.id || `n${nodes.length}`,
+      target: newNodeId,
+    },
+  ]);
+
+    setShowConfig(false)
+
+    try {
+    const response = await axios.post("http://localhost:3000/api/node", {
+      nodeId: newNode.id,
+      xCoordinate: newX,
+      yCoordinate: newY,
+      type: selectedNode,
+      workflowId,
+      data: {
+        hasChild: false,
+      },
+      config,
+    });
+
+    console.log("Response:", response.data);
+  } catch (error) {
+    console.error("Error saving node:", error);
+  }
+  } 
 
   useEffect(() => {
     setNodes((nds) =>
@@ -103,58 +176,61 @@ export default function App() {
     );
   }, [edges]);
 
-  const handleNewNode = (data: any) => {
-    const { node } = data;
+  const handleNewNode = (data: { id: any; }) => {
     setShowConfig(true);
+    setSelectedNode(data.id)
+    // let newNodeId=`n${nodes.length+1}`
+    // const selectedNode = nodes.find((n) => n.selected === true);
 
-    setNodes((prev: any[]) => {
-      const lastNode = prev[prev.length - 1];
-      const newX = lastNode ? lastNode.position.x + 200 : 0;
-      const newY = lastNode ? lastNode.position.y : 0;
+    // setNodes((prev) => {
+    // const lastNode = selectedNode || prev[prev.length - 1];
+  
 
-      const newNode = {
-        id: `n${prev.length + 1}`,
-        position: { x: newX, y: newY },
-        data: {
-          label: `Node${prev.length + 1}`,
-          hasChild: false,
-          setAddNewNodeModal,
-        },
-        type: node,
-      };
-      axios.post("http://localhost:3000/api/node", {
-        nodeId: newNode.id,
-        xCoordinate: newX,
-        yCoordinate: newY,
-        type: data.id.toUpperCase(),
-        workflowId,
-        data: {
-          hasChild: false,
-        },
-      });
+    //   const newX = lastNode ? lastNode.position.x + 200 : 0;
+    //   const newY = lastNode ? lastNode.position.y : 0;
+    //   newNodeId=`n${prev.length+1}`
+    //   const newNode = {
+    //     id: newNodeId,
+    //     position: { x: newX, y: newY },
+    //     data: {
+    //       label: `Node${prev.length + 1}`,
+    //       hasChild: false,
+    //       setAddNewNodeModal,
+    //     },
+    //     type: data.id,
+    //   };
+    //   // axios.post("http://localhost:3000/api/node", {
+    //   //   nodeId: newNode.id,
+    //   //   xCoordinate: newX,
+    //   //   yCoordinate: newY,
+    //   //   type: data.id.toUpperCase(),
+    //   //   workflowId,
+    //   //   data: {
+    //   //     hasChild: false,
+    //   //   },
+    //   // });
 
-      if (lastNode) {
-        lastNode.data = { ...lastNode.data, hasChild: true };
-        axios.put("http://localhost:3000/api/node", {
-          nodeId: lastNode.id,
-          data: {
-            hasChild: true,
-          },
-        });
-      }
+    //   const updatedNodes = prev.map((n) =>
+    //   n.id === lastNode?.id
+    //     ? { ...n, data: { ...n.data, hasChild: true } }
+    //     : n
+    // );
 
-      return [...prev.slice(0, -1), lastNode, newNode];
-    });
+    // return [...updatedNodes, newNode];
+    // });
+ 
 
-    setEdges((prev: any[]) => [
-      ...prev,
-      {
-        id: `n${prev.length + 1}-n${prev.length + 2}`,
-        source: `n${prev.length + 1}`,
-        target: `n${prev.length + 2}`,
-      },
-    ]);
+    // setEdges((prev: any[]) => [
+    //   ...prev,
+    //   {
+    //     id: `${selectedNode?.id || `n${nodes.length}`}-${newNodeId}`,
+    //   source: selectedNode?.id || `n${nodes.length}`,
+    //   target: newNodeId,
+    //   },
+    // ]);
   };
+
+
 
   const handleFirstNode = async (data: {
     id: string;
@@ -163,31 +239,30 @@ export default function App() {
     icon: string;
     node: string;
   }) => {
-    const { node } = data;
     const respone = await axios.post("http://localhost:3000/api/node", {
-      type: data.id.toUpperCase(),
+      type: data.id,
       workflowId,
+      nodeId:'n1',
       xCoordinate: 100,
       yCoordinate: 0,
-      config: JSON.stringify({
-        data: {
-          hasChild: false,
-        },
-      }),
+      data:{
+        hasChild:false
+      }
     });
 
-    console.log(JSON.stringify(respone.data) + "-------->>>");
+     console.log(JSON.stringify(respone.data) + "-------->>>");
     setNodes([
       {
         id: `n1`,
         position: { x: 100, y: 0 },
         data: { setAddNewNodeModal },
-        type: node ?? "input",
+        type: data.id ?? "input",
       },
     ]);
   };
 
   const handleDeleteEdges = (deletedEdges: any[]) => {
+    console.log(JSON.stringify(deletedEdges)+"-------->deleted edges")
     setNodes((prev) =>
       prev.map((prevnode) => {
         const lastSource = deletedEdges.some((e) => e.source == prevnode.id);
@@ -202,6 +277,7 @@ export default function App() {
     );
   };
   const handleDeleteNodes = (deletedNodes: any[]) => {
+  //  console.log(JSON.stringify(deletedNodes)+"---------deleted nodes")
     setNodes((prev) => {
       const remaining = prev.filter(
         (nodes) => !deletedNodes.some((d) => d.id == nodes.id)
@@ -221,16 +297,20 @@ export default function App() {
   };
 
   const onNodesChange = useCallback(
-    (changes: NodeChange<any>[]) =>
-      setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
+    (changes: NodeChange<any>[]) =>{
+     //     console.log(JSON.stringify(changes)+"------nodes changes ")
+
+      setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot))},
     []
   );
 
   const onEdgesChange = useCallback((changes: EdgeChange<any>[]) => {
+   // console.log(JSON.stringify(changes)+"------edges changes ")
     setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot));
   }, []);
 
   const onConnect = useCallback((params: any) => {
+  //  console.log(JSON.stringify(params)+"0------connect")
     setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot));
   }, []);
 
@@ -334,6 +414,7 @@ export default function App() {
 
       {showConfig && (
         <Config
+        handleSaveConfig={handlSaveNodeConfig}
           setShowConfig={setShowConfig}
           workflowId={workflowId as string}
         />

@@ -12,7 +12,7 @@ const FirstNodeModal = ({
 
   const triggers = [
     {
-      id: "manual",
+      id: "MANUAL",
       title: "Trigger manually",
       description:
         "Runs the flow on clicking a button in n8n. Good for getting started quickly",
@@ -20,35 +20,19 @@ const FirstNodeModal = ({
       node: "manual",
     },
     {
-      id: "schedule",
+      id: "SCHEDULE",
       title: "On a schedule",
       description: "Runs the flow every day, hour, or custom interval",
       icon: "⏰",
       node: "manual",
     },
     {
-      id: "webhook",
+      id: "WEBHOOK",
       title: "On webhook call",
       description: "Runs the flow on receiving an HTTP request",
       icon: "🔗",
       node: "manual",
-    },
-    {
-      id: "form",
-      title: "On form submission",
-      description:
-        "Generate webforms in n8n and pass their responses to the workflow",
-      icon: "📝",
-      node: "manual",
-    },
-    {
-      id: "workflow",
-      title: "When executed by another workflow",
-      description:
-        "Runs the flow when called by the Execute Workflow node from a different workflow",
-      icon: "🔄",
-      node: "manual",
-    },
+    }
   ];
 
   const filteredTriggers = triggers.filter(

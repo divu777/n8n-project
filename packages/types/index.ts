@@ -1,7 +1,7 @@
 import z from 'zod/v4'
 import { Annotation, MessagesAnnotation,addMessages, messagesStateReducer, type Messages } from "@langchain/langgraph";
 import type { BaseMessage } from "@langchain/core/messages";
-import type { Prisma } from "@prisma/client";
+import { nodeType, type Prisma } from "@prisma/client";
 
 export const NewWorflowSchema = z.object({
     name:z.string(),
@@ -43,8 +43,10 @@ export const NodeDataSchema = z.object({
     // model:z.string(),
     // messages:z.array(MessageSchema),
     workflowId:z.string(),
-    type:z.enum(["MANUAL","TRIGGER","LLM"]),
-    config:z.string().optional(),
+    nodeId:z.string(),
+    type:z.enum(nodeType),
+    config:z.json().optional(),
+    data:z.json(),
     xCoordinate:z.number(),
     yCoordinate:z.number()
 })

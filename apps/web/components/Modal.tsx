@@ -27,7 +27,7 @@ const Modal = ({
       trigger.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleTriggerSelect = (trigger: any) => {
+  const handleTriggerSelect = (trigger: { id: string; title: string; description: string; icon: string; node: string; }) => {
     console.log("Selected trigger:", trigger);
 
     handleNewNode(trigger);
@@ -119,3 +119,12 @@ const Modal = ({
 };
 
 export default Modal;
+/**
+ * So i think what i should do is first put the handlenode
+ *  inside the config to passed and also config should be
+ *  like be based on the node it got selected it should only
+ *  render that specific config and then inside the config we 
+ *  should send the request to backend to send node 
+ *  so if the config is empty its not set up by user and then 
+ *  say its error 
+ */
