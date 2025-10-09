@@ -61,7 +61,9 @@ export const POST = async (req: NextRequest) => {
         ...validInputs.data,
       },
       select:{
-        name:true
+        name:true,
+        id:true,
+        status:true
       }
     });
 

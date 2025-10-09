@@ -35,8 +35,10 @@ if(!session || !session.data){
           userId:session.data.user.id,
           name:nameRef.current.value 
         })
+
         if(data.success){
             setWorkflows((prev)=>[...prev,data.data])
+
           }
           console.log(JSON.stringify(data))
         }

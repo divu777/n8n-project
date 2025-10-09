@@ -62,12 +62,13 @@ model Node{
 
 model Edge{
   id String @id @default(uuid())
-  workflowId String
+  workflowId String 
   workflow Workflow @relation(fields: [workflowId],references: [id], onDelete: Cascade)
   sourceId String
-  source Node @relation("EdgeSource",fields: [sourceId],references: [id])
+  
+  source Node @relation("EdgeSource",fields: [sourceId,workflowId],references: [nodeId,workflowId])
   targetId String
-  target Node @relation("EdgeTarget",fields: [targetId],references: [id])
+  target Node @relation("EdgeTarget",fields: [targetId,workflowId],references: [nodeId,workflowId])
 
   @@index([workflowId])
 }
@@ -78,6 +79,7 @@ enum nodeType{
   MANUAL 
   SCHEDULER
   LLM
+  AGENT
 }
 
 enum workflowStatus{

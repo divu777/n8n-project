@@ -82,18 +82,27 @@ export const POST = async (
         apiKey: encryptedAPI,
         Provider: validInputs.data.provider,
       },
+      select:{
+        id:true,
+        Provider:true
+      }
     });
 
     if (!newCreds) {
       return NextResponse.json({
         message: "error in adding new creds",
         success: false,
+       
       });
     }
 
     return NextResponse.json({
       message: "Added new creds for user successfully",
       success: true,
+       data:{
+          ...newCreds,
+          api_key:validInputs.data.api_key
+        }
     });
   } catch (error) {
     console.log("Error in getting user credentials: " + error);

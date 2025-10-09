@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import AddCredentials from "./AddCredentials";
 import { useSession } from "next-auth/react";
 import { useCredentials } from "@/lib/hooks/useCredentials";
-import {nodeTypes} from "@/app/workflow/[workflowId]/page"
 interface Message {
   role: string;
   content: string;
@@ -18,17 +17,24 @@ const MODELS: Record<string, string[]> = {
 
 const LLM_PROVIDERS = Object.keys(MODELS);
 
-const Config = ({ setShowConfig ,workflowId,handleSaveConfig}: { setShowConfig: (x: boolean) => any ,workflowId:string,handleSaveConfig:(x?:any)=>void}) => {
+const Config = ({
+  setShowConfig,
+  workflowId,
+  handleSaveConfig,
+}: {
+  setShowConfig: (x: boolean) => any;
+  workflowId: string;
+  handleSaveConfig: (x?: any) => void;
+}) => {
   const session = useSession();
   const [selectedKey, setSelectedKey] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [addnewCred, setaddNewCred] = useState(false);
-  const apiKeys = useCredentials(session.data?.user.id);
+  const { apiKeys, setApiKeys } = useCredentials(session.data?.user.id);
   const [messages, setMessages] = useState<Message[]>([
     { role: "user", content: "" },
   ]);
-
 
   const handleAddMessage = () => {
     setMessages([...messages, { role: "user", content: "" }]);
@@ -44,12 +50,12 @@ const Config = ({ setShowConfig ,workflowId,handleSaveConfig}: { setShowConfig: 
     setMessages(updated);
   };
 
-
-
   const handleSaveConfiguration = async () => {
-    handleSaveConfig({messages,
-      api_key_id:selectedKey,
-      model:selectedModel})
+    handleSaveConfig({
+      messages,
+      api_key_id: selectedKey,
+      model: selectedModel,
+    });
   };
 
   return (
@@ -108,6 +114,7 @@ const Config = ({ setShowConfig ,workflowId,handleSaveConfig}: { setShowConfig: 
           {/* Adding New Credentials */}
           {addnewCred && (
             <AddCredentials
+              setApiKeys={setApiKeys}
               llmProviders={LLM_PROVIDERS}
               setaddNewCred={setaddNewCred}
               userId={session.data!.user.id}
@@ -185,14 +192,16 @@ const Config = ({ setShowConfig ,workflowId,handleSaveConfig}: { setShowConfig: 
           <button
             className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-100 transition-colors"
             onClick={() => {
-              handleSaveConfig()
-              setShowConfig(false)}}
+              handleSaveConfig();
+              setShowConfig(false);
+            }}
           >
             Cancel
           </button>
           <button
-          onClick={handleSaveConfiguration}
-          className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+            onClick={handleSaveConfiguration}
+            className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          >
             Save
           </button>
         </div>

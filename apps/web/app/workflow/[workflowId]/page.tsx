@@ -21,11 +21,13 @@ import LLM from "@/components/LLM";
 import { useParams } from "next/navigation";
 import Config from "@/components/Config";
 import axios from "axios";
+import Agent from "@/components/Agent";
 
 export const nodeTypes = {
   addNode: AddNode,
   MANUAL: ManualTrigger,
   LLM: LLM,
+  AGENT:Agent
 };
 
 export default function App() {
@@ -42,46 +44,51 @@ export default function App() {
   }
 
   type nodesType = {
-    id:string,
-    type:string,
-    data:{
-      hasChild:boolean
-    }
-  }
-
-  
+    id: string;
+    type: string;
+    data: {
+      hasChild: boolean;
+    };
+  };
 
   const fetchWorflowData = async () => {
     const { data } = await axios.get(
       "http://localhost:3000/api/workflows/" + workflowId
     );
-        console.log(JSON.stringify(data)+"------nodeexit")
+    //console.log(JSON.stringify(data)+"------nodeexit")
 
-
-    const nodesExist = data.nodes;
-    console.log(JSON.stringify(nodesExist)+"------nodeexit")
+    const nodesExist = data.data.nodes ?? [];
+    //console.log(JSON.stringify(nodesExist)+"------nodeexit222")
 
     if (nodesExist && nodesExist.length > 0) {
-      const nodes = nodesExist.map((node) => {
-        console.log(JSON.stringify(node)+"------node")
-        const data = node.data;
-        return {
-          id: String(node.nodeId),
-          position: {
-            x: node.xCoordinate,
-            y: node.yCoordinate,
-          },
-          data: {
-            ...data,
-            setAddNewNodeModal,
-          },
-          type: node.type,
-        };
-      });
+      const nodes = nodesExist.map(
+        (node: {
+          data: any;
+          nodeId: any;
+          xCoordinate: any;
+          yCoordinate: any;
+          type: any;
+        }) => {
+          //  console.log(JSON.stringify(node)+"------node")
+          const data = node.data;
+          return {
+            id: String(node.nodeId),
+            position: {
+              x: node.xCoordinate,
+              y: node.yCoordinate,
+            },
+            data: {
+              ...data,
+              setAddNewNodeModal,
+            },
+            type: node.type,
+          };
+        }
+      );
 
       setNodes(nodes);
     }
-    if (!data.nodes || data.nodes.length === 0) {
+    if (!nodesExist || nodesExist.length === 0) {
       setNodes([
         {
           id: "h2",
@@ -92,11 +99,34 @@ export default function App() {
       ]);
     }
 
-    console.log(JSON.stringify(data) + "---------g-");
+    const edgesExist = data.data.edges
+    //console.log("edgg========"+JSON.stringify(edgesExist))
+    if(edgesExist && edgesExist.length >0){
+      const edges = edgesExist.map((edge: { id: string; sourceId: string; targetId: string; })=>{
+        return{
+          id:edge.id,
+          source:edge.sourceId,
+          target:edge.targetId
+        }
+      })
+
+      //console.log(edges)
+
+      setEdges(edges)
+    }
+
+    if(!edgesExist || edgesExist.length===0){
+      console.log("here")
+      setEdges([])
+    }
+    //  console.log(JSON.stringify(data) + "---------g-");
   };
+
+
 
   useEffect(() => {
     fetchWorflowData();
+
   }, []);
 
   const [nodes, setNodes] = useState<any[]>([]);
@@ -104,65 +134,77 @@ export default function App() {
   const [addNewNodemodal, setAddNewNodeModal] = useState(false);
   const [edges, setEdges] = useState<any[]>([]);
   const [showConfig, setShowConfig] = useState(false);
-  const [selectedNode , setSelectedNode] = useState<string|null>(null)
+  const [selectedNodeID, setSelectedNodeId] = useState<string | null>(null);
 
-  const handlSaveNodeConfig =async (data?: any)=>{
-        let newNodeId=`n${nodes.length+1}`
-        const config = data ? data : null
-        const selectedNode = nodes.find((n) => n.selected === true);
-    
-         const lastNode = selectedNode || nodes[nodes.length - 1];
-          const newX = lastNode ? lastNode.position.x + 200 : 0;
-          const newY = lastNode ? lastNode.position.y : 0;
+  const handlSaveNodeConfig = async (data?: any) => {
+    let newNodeId = `n${nodes.length + 1}`;
+    const config = data ? data : null;
+    const selectedNode = nodes.find((n) => n.selected === true);
 
-          const newNode = {
-    id: newNodeId,
-    position: { x: newX, y: newY },
-    data: {
-      label: `Node${nodes.length + 1}`,
-      hasChild: false,
-      setAddNewNodeModal,
-    },
-    type: selectedNode,
-  };
-      setNodes((prev) => {
-    const updatedNodes = prev.map((n) =>
-      n.id === lastNode?.id
-        ? { ...n, data: { ...n.data, hasChild: true } }
-        : n
-    );
-    return [...updatedNodes, newNode];
-  });
+    const lastNode = selectedNode || nodes[nodes.length - 1];
+    const newX = lastNode ? lastNode.position.x + 200 : 0;
+    const newY = lastNode ? lastNode.position.y : 0;
 
-  setEdges((prev: any[]) => [
-    ...prev,
-    {
-      id: `${selectedNode?.id || `n${nodes.length}`}-${newNodeId}`,
-      source: selectedNode?.id || `n${nodes.length}`,
-      target: newNodeId,
-    },
-  ]);
-
-    setShowConfig(false)
-
-    try {
-    const response = await axios.post("http://localhost:3000/api/node", {
-      nodeId: newNode.id,
-      xCoordinate: newX,
-      yCoordinate: newY,
-      type: selectedNode,
-      workflowId,
+    const newNode = {
+      id: newNodeId,
+      position: { x: newX, y: newY },
       data: {
+        label: `Node${nodes.length + 1}`,
         hasChild: false,
+        setAddNewNodeModal,
       },
-      config,
+      type: selectedNodeID,
+    };
+    setNodes((prev) => {
+      const updatedNodes = prev.map((n) =>
+        n.id === lastNode?.id
+          ? { ...n, data: { ...n.data, hasChild: true } }
+          : n
+      );
+      return [...updatedNodes, newNode];
     });
 
-    console.log("Response:", response.data);
-  } catch (error) {
-    console.error("Error saving node:", error);
-  }
-  } 
+    setEdges((prev: any[]) => [
+      ...prev,
+      {
+        id: `${selectedNode?.id || `n${nodes.length}`}-${newNodeId}`,
+        source: selectedNode?.id || `n${nodes.length}`,
+        target: newNodeId,
+      },
+    ]);
+
+    setShowConfig(false);
+
+    try {
+      const response = await axios.post("http://localhost:3000/api/node", {
+        nodeId: newNode.id,
+        xCoordinate: newX,
+        yCoordinate: newY,
+        type: selectedNodeID,
+        workflowId,
+        data: {
+          hasChild: false,
+        },
+        config,
+      });
+
+      const response2 = await axios.post("http://localhost:3000/api/edges", {
+        sourceId: selectedNode.id,
+        targetId: newNode.id,
+        workflowId,
+      });
+
+      console.log("Response:", response.data);
+    } catch (error) {
+      console.error("Error saving node:", error);
+    }
+  };
+
+//   useEffect(()=>{
+//   console.log(JSON.stringify(edges)+"-------edg"),
+//     console.log(JSON.stringify(nodes)+"-------nodeee")
+
+// },[edges,nodes])
 
   useEffect(() => {
     setNodes((nds) =>
@@ -176,61 +218,10 @@ export default function App() {
     );
   }, [edges]);
 
-  const handleNewNode = (data: { id: any; }) => {
+  const handleNewNode = (data: { id: any }) => {
     setShowConfig(true);
-    setSelectedNode(data.id)
-    // let newNodeId=`n${nodes.length+1}`
-    // const selectedNode = nodes.find((n) => n.selected === true);
-
-    // setNodes((prev) => {
-    // const lastNode = selectedNode || prev[prev.length - 1];
-  
-
-    //   const newX = lastNode ? lastNode.position.x + 200 : 0;
-    //   const newY = lastNode ? lastNode.position.y : 0;
-    //   newNodeId=`n${prev.length+1}`
-    //   const newNode = {
-    //     id: newNodeId,
-    //     position: { x: newX, y: newY },
-    //     data: {
-    //       label: `Node${prev.length + 1}`,
-    //       hasChild: false,
-    //       setAddNewNodeModal,
-    //     },
-    //     type: data.id,
-    //   };
-    //   // axios.post("http://localhost:3000/api/node", {
-    //   //   nodeId: newNode.id,
-    //   //   xCoordinate: newX,
-    //   //   yCoordinate: newY,
-    //   //   type: data.id.toUpperCase(),
-    //   //   workflowId,
-    //   //   data: {
-    //   //     hasChild: false,
-    //   //   },
-    //   // });
-
-    //   const updatedNodes = prev.map((n) =>
-    //   n.id === lastNode?.id
-    //     ? { ...n, data: { ...n.data, hasChild: true } }
-    //     : n
-    // );
-
-    // return [...updatedNodes, newNode];
-    // });
- 
-
-    // setEdges((prev: any[]) => [
-    //   ...prev,
-    //   {
-    //     id: `${selectedNode?.id || `n${nodes.length}`}-${newNodeId}`,
-    //   source: selectedNode?.id || `n${nodes.length}`,
-    //   target: newNodeId,
-    //   },
-    // ]);
+    setSelectedNodeId(data.id);
   };
-
-
 
   const handleFirstNode = async (data: {
     id: string;
@@ -242,15 +233,16 @@ export default function App() {
     const respone = await axios.post("http://localhost:3000/api/node", {
       type: data.id,
       workflowId,
-      nodeId:'n1',
+      nodeId: "n1",
       xCoordinate: 100,
       yCoordinate: 0,
-      data:{
-        hasChild:false
-      }
+      data: {
+        hasChild: false,
+      },
     });
 
-     console.log(JSON.stringify(respone.data) + "-------->>>");
+
+    console.log(JSON.stringify(respone.data) + "-------->>>");
     setNodes([
       {
         id: `n1`,
@@ -261,8 +253,15 @@ export default function App() {
     ]);
   };
 
-  const handleDeleteEdges = (deletedEdges: any[]) => {
-    console.log(JSON.stringify(deletedEdges)+"-------->deleted edges")
+  const handleDeleteEdges = async(deletedEdges: any[]) => {
+
+    const {data} = await axios.delete('http://localhost:3000/api/edges',{
+      data:{
+        edges:deletedEdges
+      }
+    })
+    console.log(JSON.stringify(data)+"---deleted edge db")
+    console.log(JSON.stringify(deletedEdges) + "-------->deleted edges");
     setNodes((prev) =>
       prev.map((prevnode) => {
         const lastSource = deletedEdges.some((e) => e.source == prevnode.id);
@@ -276,8 +275,16 @@ export default function App() {
       })
     );
   };
-  const handleDeleteNodes = (deletedNodes: any[]) => {
-  //  console.log(JSON.stringify(deletedNodes)+"---------deleted nodes")
+  const handleDeleteNodes =async (deletedNodes: any[]) => {
+    console.log(JSON.stringify(deletedNodes)+"---------deleted nodes")
+     const {data} = await axios.delete('http://localhost:3000/api/node',{
+      data:{
+        nodes:deletedNodes,
+        workflowId
+      }
+    })
+        console.log(JSON.stringify(data)+"---deleted edge db")
+
     setNodes((prev) => {
       const remaining = prev.filter(
         (nodes) => !deletedNodes.some((d) => d.id == nodes.id)
@@ -296,21 +303,26 @@ export default function App() {
     });
   };
 
-  const onNodesChange = useCallback(
-    (changes: NodeChange<any>[]) =>{
-     //     console.log(JSON.stringify(changes)+"------nodes changes ")
+  const onNodesChange = useCallback((changes: NodeChange<any>[]) => {
+    //     console.log(JSON.stringify(changes)+"------nodes changes ")
 
-      setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot))},
-    []
-  );
+    setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot));
+  }, []);
 
   const onEdgesChange = useCallback((changes: EdgeChange<any>[]) => {
-   // console.log(JSON.stringify(changes)+"------edges changes ")
+    // console.log(JSON.stringify(changes)+"------edges changes ")
     setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot));
   }, []);
 
-  const onConnect = useCallback((params: any) => {
-  //  console.log(JSON.stringify(params)+"0------connect")
+  const onConnect = useCallback(async(params: any) => {
+    //console.log(JSON.stringify(params)+"0------connect")
+    const {data} = await axios.post('http://localhost:3000/api/edges',{
+      workflowId,
+      sourceId:params.source,
+      targetId:params.target
+    })
+
+    //console.log(JSON.stringify(data)+"------connnext log ")
     setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot));
   }, []);
 
@@ -414,7 +426,7 @@ export default function App() {
 
       {showConfig && (
         <Config
-        handleSaveConfig={handlSaveNodeConfig}
+          handleSaveConfig={handlSaveNodeConfig}
           setShowConfig={setShowConfig}
           workflowId={workflowId as string}
         />

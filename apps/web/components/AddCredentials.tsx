@@ -1,36 +1,42 @@
-'use client'
-import axios from 'axios'
-import { useSession } from 'next-auth/react'
-import React, { useRef, useState } from 'react'
+"use client";
+import axios from "axios";
+import { useSession } from "next-auth/react";
+import React, { useRef, useState } from "react";
 
 const AddCredentials = ({
+  setApiKeys,
   llmProviders,
   setaddNewCred,
-  userId
+  userId,
 }: {
-  llmProviders: string[]
-  setaddNewCred:React.Dispatch<React.SetStateAction<boolean>>
-  userId:string
+  setApiKeys: (x: any) => any;
+  llmProviders: string[];
+  setaddNewCred: React.Dispatch<React.SetStateAction<boolean>>;
+  userId: string;
 }) => {
+  //console.log(JSON.stringify(session.data))
+  const [provider, setProvider] = useState("OpenAI");
 
-    //console.log(JSON.stringify(session.data))
-      const [provider, setProvider] = useState("OpenAI");
-    
-    const apiKeyRef = useRef<HTMLInputElement>(null)
-    const handleAddNewCred = async ()=>{
-        console.log("P"+provider)
-        console.log("a"+apiKeyRef.current?.value)
-        if(provider && apiKeyRef.current?.value){
-            // const {data} =await axios.post("http://localhost:3000/api/credentials/"+userId,{
-            //     provider,
-            //     api_key:apiKeyRef.current.value
-            // })
-
-            // console.log(JSON.stringify(data)+"=============")
-
-            setaddNewCred(false)
+  const apiKeyRef = useRef<HTMLInputElement>(null);
+  const handleAddNewCred = async () => {
+    console.log("P" + provider);
+    console.log("a" + apiKeyRef.current?.value);
+    if (provider && apiKeyRef.current?.value) {
+      const { data } = await axios.post(
+        "http://localhost:3000/api/credentials/" + userId,
+        {
+          provider,
+          api_key: apiKeyRef.current.value,
         }
+      );
+
+      setApiKeys((prev: any) => [...prev, data.data]);
+
+      console.log(JSON.stringify(data) + "=============");
+
+      setaddNewCred(false);
     }
+  };
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-40">
       {/* Modal container */}
@@ -64,7 +70,7 @@ const AddCredentials = ({
             API Key
           </label>
           <input
-          ref={apiKeyRef}
+            ref={apiKeyRef}
             type="text"
             placeholder="Enter your API key"
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
@@ -75,20 +81,20 @@ const AddCredentials = ({
         <div className="flex justify-end space-x-3">
           <button
             className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-            onClick={()=>setaddNewCred(false)}
+            onClick={() => setaddNewCred(false)}
           >
             Cancel
           </button>
           <button
             className="px-4 py-2 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-            onClick={()=>handleAddNewCred()}
+            onClick={() => handleAddNewCred()}
           >
             Savey
           </button>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AddCredentials
+export default AddCredentials;

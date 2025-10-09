@@ -17,5 +17,5 @@ export const useCredentials = (userId?: string) => {
       .then(({ data }) => data.success && setApiKeys(data.credentials));
   }, [userId]);
 
-  return apiKeys;
+  return {apiKeys,setApiKeys};
 };

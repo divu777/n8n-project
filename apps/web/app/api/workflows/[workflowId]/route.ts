@@ -10,7 +10,8 @@ export const GET = async(req:NextRequest,{params}:{params:Promise<{workflowId:st
                 id:workflowId
             },
             include:{
-                nodes:true
+                nodes:true,
+                edges:true
             }
         })
 

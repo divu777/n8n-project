@@ -107,14 +107,6 @@ export const PUT = async(req:NextRequest)=>{
             })
         }
 
-        let configJson = nodeExist.config ? JSON.parse(nodeExist.config) : null
-
-        if(configJson){
-            configJson= JSON.stringify({
-                ...configJson,
-                ...body.config
-            })
-        }
 
 
         const nodeData = await prisma.node.update({
@@ -125,13 +117,63 @@ export const PUT = async(req:NextRequest)=>{
                 }
             },
             data:{
-                config:configJson
+                config:body.config
             }
         })
     } catch (error) {
         console.log("Error in updating the nodes: "+error);
         return NextResponse.json({
             message:"Error in updating nodes",
+            success:false
+        })
+    }
+}
+
+import z from 'zod/v4'
+export const deleteNodeSchema = z.object({
+    workflowId:z.string(),
+    nodes:z.array(z.object({
+    id:z.string()
+}))})
+
+export const DELETE=async(req:NextRequest)=>{
+    try {
+        console.log(JSON.stringify(req))
+
+        const body = await req.json()
+                console.log(JSON.stringify(body)+"----body")
+
+        const validInputs= deleteNodeSchema.safeParse(body)
+
+        if(!validInputs.success){
+            return NextResponse.json({
+                message:"Invalid Inputs",
+                success:false
+            })
+        }
+
+        validInputs.data.nodes.map(async(node)=>{
+            await prisma.node.delete({
+                where:{
+                    workflowId_nodeId:{
+
+                        nodeId:node.id,
+                        workflowId:validInputs.data.workflowId
+                    }
+                }
+            })
+        })
+
+        return NextResponse.json({
+            message:"Deleted all the nodes",
+            success:true
+        })
+        
+    }   
+     catch (error) {
+        console.log("Error in deleting nodes: "+error);
+        return NextResponse.json({
+            message:"Error in deleting nodes",
             success:false
         })
     }
