@@ -53,6 +53,7 @@ model Node{
   type nodeType
   config Json?
   data Json
+  isTrigger Boolean @default(false)
   xCoordinate Int
   yCoordinate Int
   EdgeSource Edge[] @relation("EdgeSource")

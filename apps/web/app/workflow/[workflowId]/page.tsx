@@ -80,6 +80,7 @@ export default function App() {
             data: {
               ...data,
               setAddNewNodeModal,
+              handleExecute : node.type=='MANUAL' ? handleExecute : undefined
             },
             type: node.type,
           };
@@ -122,6 +123,11 @@ export default function App() {
     //  console.log(JSON.stringify(data) + "---------g-");
   };
 
+  const handleExecute = async()=>{
+    const {data}= await axios.get(`http://localhost:3000/api/workflows/${workflowId}/execute`)
+    console.log(JSON.stringify(data)+"-------execution response");
+    
+  }
 
 
   useEffect(() => {
@@ -239,6 +245,7 @@ export default function App() {
       data: {
         hasChild: false,
       },
+      isTrigger:true
     });
 
 
@@ -247,7 +254,7 @@ export default function App() {
       {
         id: `n1`,
         position: { x: 100, y: 0 },
-        data: { setAddNewNodeModal },
+        data: { setAddNewNodeModal,handleExecute, hasChild:false },
         type: data.id ?? "input",
       },
     ]);
@@ -334,6 +341,9 @@ export default function App() {
     });
     alert("Workflow saved!");
   };
+
+
+  
 
   return (
     <div className="w-screen h-screen flex">

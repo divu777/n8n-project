@@ -1,4 +1,8 @@
+import { success } from 'zod/v4';
+import prisma from '@/app/db';
+import { Edge, Node } from '@prisma/client';
 import crypto from 'crypto'
+import { initChatModel } from 'langchain/chat_models/universal';
 const algo = 'aes-256-gcm'
 const SECRET_KEY = crypto.scryptSync(process.env.SECRET_KEY!,'salt',32)
 const IV = crypto.randomBytes(16);
@@ -21,4 +25,129 @@ export function decrypt(encryptedData: string) {
     decipher.final(),
   ]);
   return decrypted.toString("utf8");
+}
+
+
+export async function executeNode(node:Node){
+  console.log("here")
+  console.log(JSON.stringify(node))
+  const nodeType = node.type
+
+  let resultObj
+
+  switch(nodeType){
+    case 'LLM':
+      resultObj = await executeLLM(node)
+      break
+
+    case 'MANUAL':
+      resultObj = {
+        message:"Manual executed",
+        success:true
+      }
+      break
+
+    default:
+      resultObj={
+        message:"Error in creating result. No node type matching",
+        success:false
+      }
+      break
+  }
+
+return resultObj
+  
+}
+
+export const runExecution = async(nodes:Node[],edges:Edge[])=>{
+  console.log("runnn")
+  const nodeMap = new Map(nodes.map((n)=>[n.nodeId,n]))
+
+  console.log(JSON.stringify(nodeMap)+"--------map")
+  const adjacent = new Map<string,string[]>();
+
+  edges.forEach((edge)=>{
+    if(!nodeMap.has(edge.sourceId) || !nodeMap.has(edge.targetId)) return 
+    if(!adjacent.has(edge.sourceId)) adjacent.set(edge.sourceId,[])
+    adjacent.get(edge.sourceId)!.push(edge.targetId)
+  })
+const triggernodes = nodes.filter((nodes)=>nodes.isTrigger==true)
+  const visited = new Set<string>()
+
+  const results:Record<string,any> = { }
+
+  async function dfs(nodeId:string,paths:Set<string>){
+    console.log("dfs")
+  if(paths.has(nodeId)) return 
+  if(visited.has(nodeId)) return 
+
+
+  console.log("insidee")
+  paths.add(nodeId)
+  visited.add(nodeId)
+
+  console.log(JSON.stringify(nodeMap)+"node map")
+
+  const node = nodeMap.get(nodeId)!
+  results[nodeId]=await executeNode(node)
+
+  const children = adjacent.get(nodeId) || []
+
+  for(const childID of children){
+    await dfs(childID,paths)
+  }
+
+  paths.delete(nodeId)
+}
+console.log(JSON.stringify(triggernodes)+"------>trigger")
+
+for(const triggernode of triggernodes){
+  await dfs(triggernode.nodeId,new Set())
+}
+
+return results
+  
+}
+
+
+
+export const executeLLM=async(node:Node) =>{
+  console.log("execute lllm")
+  const config = node.config! as any
+  const result = await callLLM(config)
+  return result
+
+}
+
+export const callLLM=async(config:{
+  messages:string[],
+  model:string,
+  api_key_id:string
+})=>{
+  const credentials = await prisma.credentials.findUnique({
+    where:{
+      id:config.api_key_id
+    }
+  })
+
+  if(!credentials){
+    return{
+      message:"Error credentials provided does not exist. Change LLM config and re-run",
+      success:false
+    }
+  }
+  process.env.OPENAI_API_KEY= decrypt(credentials.apiKey)
+  const llm = await initChatModel(config.model,{
+    modelProvider:(credentials.Provider).toLowerCase(),
+  
+  })
+
+  const response = await llm.invoke(config.messages)
+
+  console.log("response-----"+JSON.stringify(response))
+
+  return {
+    message:[response],
+    success:true
+  }
 }

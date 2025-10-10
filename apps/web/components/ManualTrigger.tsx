@@ -1,10 +1,12 @@
 "use client";
 import { Handle, Position } from "@xyflow/react";
+import axios from "axios";
 import { Play, Plus, Pointer } from "lucide-react";
 import React, { useState } from "react";
 
 const ManualTrigger = ({ data }: { data: any }) => {
-  const { setAddNewNodeModal, hasChild } = data;
+  const { setAddNewNodeModal, hasChild,handleExecute } = data;
+
     const [showMenu, setShowMenu] = useState(false);
     let hideTimeout: NodeJS.Timeout;
 
@@ -16,6 +18,8 @@ const ManualTrigger = ({ data }: { data: any }) => {
    const handleMouseLeave = () => {
     hideTimeout = setTimeout(() => setShowMenu(false), 200); // add small delay
   };
+
+  
 
   return (
     <div className="relative flex items-center"
@@ -44,6 +48,7 @@ const ManualTrigger = ({ data }: { data: any }) => {
 
        {showMenu && (
            <div
+           
           className="
             absolute left-0 top-full mt-1 w-20
             rounded-md border border-gray-300
@@ -56,7 +61,7 @@ const ManualTrigger = ({ data }: { data: any }) => {
             transition-all
             z-50
           "
-          onClick={() => console.log("hee")}
+          onClick={handleExecute}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
