@@ -109,6 +109,54 @@ return results
   
 }
 
+export const runExecutionstreamable = async(nodes:Node[],edges:Edge[],send:(data: any) => void)=>{
+  const nodeMap = new Map(nodes.map((n)=>[n.nodeId,n]))
+
+  const adjacent = new Map<string,string[]>();
+
+  edges.forEach((edge)=>{
+    if(!nodeMap.has(edge.sourceId) || !nodeMap.has(edge.targetId)) return 
+    if(!adjacent.has(edge.sourceId)) adjacent.set(edge.sourceId,[])
+    adjacent.get(edge.sourceId)!.push(edge.targetId)
+  })
+const triggernodes = nodes.filter((nodes)=>nodes.isTrigger==true)
+  const visited = new Set<string>()
+
+
+  async function dfs(nodeId:string,paths:Set<string>){
+    console.log("dfs")
+  if(paths.has(nodeId)) return 
+  if(visited.has(nodeId)) return 
+
+
+  console.log("insidee")
+  paths.add(nodeId)
+  visited.add(nodeId)
+
+  console.log(JSON.stringify(nodeMap)+"node map")
+
+  const node = nodeMap.get(nodeId)!
+   send({ event: "start-node", nodeId, type: node.type });
+
+  const result=await executeNode(node)
+    send({ event: "node-result", nodeId, result });
+
+  const children = adjacent.get(nodeId) || []
+
+  for(const childID of children){
+    await dfs(childID,paths)
+  }
+
+  paths.delete(nodeId)
+}
+console.log(JSON.stringify(triggernodes)+"------>trigger")
+
+for(const triggernode of triggernodes){
+  await dfs(triggernode.nodeId,new Set())
+}
+
+  
+}
 
 
 export const executeLLM=async(node:Node) =>{

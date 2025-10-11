@@ -20,7 +20,7 @@ const Modal = ({
       node: "LLM",
     },
     {
-      id: "Agent",
+      id: "AGENT",
       title: "AI Agent",
       description:
         "Sends a query to AI Agent which has tools and memory.",

@@ -1,7 +1,7 @@
 import { success } from 'zod/v4';
 import { NextRequest, NextResponse } from "next/server";
 import prisma from '@/app/db';
-import { runExecution } from '@/lib/helper';
+import { runExecution, runExecutionstreamable } from '@/lib/helper';
 
 export const GET = async(_:NextRequest,{params}:{params:Promise<{workflowId:string}>})=>{
     try {
@@ -24,12 +24,28 @@ export const GET = async(_:NextRequest,{params}:{params:Promise<{workflowId:stri
             })
         }
 
+        const stream = new ReadableStream({
+            async start(controller){
+                const encoder= new TextEncoder()
+                const send = (data:any)=>{
+                    controller.enqueue(encoder.encode(`${JSON.stringify(data)}\n`))
+                }
+
+                await runExecutionstreamable(workflowExist.nodes,workflowExist.edges,send)
+                send({event:"done",message:"Worflow Complete",success:true})
+                controller.close()
+            }   
+        })
+
         const result = await runExecution(workflowExist.nodes,workflowExist.edges)
 
-        return NextResponse.json({
-            message:"Workflow executed",
-            success:true,
-            result
+        return new NextResponse(stream,{
+            headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+      "Transfer-Encoding": "chunked",
+    },
         })
         
     } catch (error) {

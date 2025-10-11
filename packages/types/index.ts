@@ -1,6 +1,5 @@
 import z from 'zod/v4'
 import { Annotation, MessagesAnnotation,addMessages, messagesStateReducer, type Messages } from "@langchain/langgraph";
-import type { BaseMessage } from "@langchain/core/messages";
 import { nodeType, type Prisma } from "@prisma/client";
 
 export const NewWorflowSchema = z.object({
@@ -48,5 +47,6 @@ export const NodeDataSchema = z.object({
     config:z.json().optional(),
     data:z.json(),
     xCoordinate:z.number(),
-    yCoordinate:z.number()
+    yCoordinate:z.number(),
+    isTrigger:z.boolean().optional()
 })

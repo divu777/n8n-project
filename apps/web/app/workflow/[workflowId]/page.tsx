@@ -32,7 +32,9 @@ export const nodeTypes = {
 
 export default function App() {
   const { workflowId } = useParams();
-
+  const [workflowResult, setWorkflowResult] = useState<Record<string,any>|null>(
+    null
+  );
   interface Nodes {
     id: string;
     nodeId: string;
@@ -123,11 +125,41 @@ export default function App() {
     //  console.log(JSON.stringify(data) + "---------g-");
   };
 
-  const handleExecute = async()=>{
-    const {data}= await axios.get(`http://localhost:3000/api/workflows/${workflowId}/execute`)
-    console.log(JSON.stringify(data)+"-------execution response");
-    
+  // const handleExecute = async()=>{
+  //   const {data}= await axios.get(`http://localhost:3000/api/workflows/${workflowId}/execute`)
+  //   console.log(JSON.stringify(data)+"-------execution response");
+  //         setWorkflowResult(data.result);
+
+  // }
+
+  const handleExecute = async () => {
+  setWorkflowResult(null);
+  const res = await fetch(`/api/workflows/${workflowId}/execute`);
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  const results: Record<string, any> = {};
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const parts = buffer.split('\n');
+    buffer = parts.pop()!;
+
+    for (const part of parts) {
+      if (!part.trim()) continue;
+      const data = JSON.parse(part);
+
+      if (data.event === 'node-result') {
+        results[data.nodeId] = data.result;
+        setWorkflowResult({ ...results });
+      }
+    }
   }
+};
+
 
 
   useEffect(() => {
@@ -394,30 +426,72 @@ export default function App() {
           </ReactFlow>
         </div>
 
-        {/* 🔹 Bottom Console Section */}
-        <div
-          style={{ height: "20%", width: "100%" }}
-          className="border-t border-gray-200 bg-gray-50 flex flex-col"
+        {/* 🔹 Bottom Console Section (Streaming Logs) */}
+<div
+  style={{ height: "25%", width: "100%" }}
+  className="border-t border-gray-200 bg-gray-50 flex"
+>
+  {/* Left column — Node list */}
+  <div className="w-1/3 border-r border-gray-300 overflow-y-auto p-2">
+    <h2 className="text-xs font-semibold text-gray-600 mb-2">
+      Nodes in Workflow
+    </h2>
+    <ul className="space-y-1">
+      {nodes.map((n) => (
+        <li
+          key={n.id}
+          onClick={() => setSelectedNodeId(n.id)}
+          className={`px-2 py-1 rounded-md text-xs cursor-pointer ${
+            selectedNodeID === n.id
+              ? "bg-blue-100 text-blue-700 font-medium"
+              : "hover:bg-gray-100 text-gray-700"
+          }`}
         >
-          {/* Logs area */}
-          <div className="flex-1 overflow-y-auto p-2 text-xs font-mono text-gray-700">
-            <div className="mb-1">[INFO] Workflow started...</div>
-            <div className="mb-1">[INFO] Node executed: Manual Trigger</div>
-            <div className="mb-1">[ERROR] LLM node failed: Invalid input</div>
-          </div>
+          {n.type}
+        </li>
+      ))}
+    </ul>
+  </div>
 
-          {/* Input area */}
-          <div className="border-t border-gray-200 flex items-center px-2 py-1 bg-white">
-            <input
-              type="text"
-              placeholder="Enter command or input..."
-              className="flex-1 text-sm px-2 py-1 rounded-md border border-gray-300 focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none"
-            />
-            <button className="ml-2 px-3 py-1 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-all">
-              Run
-            </button>
+  {/* Right column — Streaming results */}
+  <div className="w-2/3 flex flex-col">
+    <div className="flex-1 overflow-y-auto p-2 text-xs font-mono text-gray-700 bg-white">
+      <h2 className="text-xs font-semibold text-gray-600 mb-2">
+        Execution Logs
+      </h2>
+      {workflowResult ? (
+        Object.entries(workflowResult).map(([nodeId, result]: any) => (
+          <div
+            key={nodeId}
+            className={`mb-2 ${
+              selectedNodeID && selectedNodeID !== nodeId ? "hidden" : ""
+            }`}
+          >
+            <div className="font-semibold text-gray-800">
+              ▶ Node: {nodeId}
+            </div>
+            <pre className="bg-gray-50 p-2 rounded text-gray-600 whitespace-pre-wrap">
+              {JSON.stringify(result, null, 2)}
+            </pre>
           </div>
-        </div>
+        ))
+      ) : (
+        <div className="text-gray-400 italic">No results yet...</div>
+      )}
+    </div>
+
+    {/* Execute Button */}
+    <div className="border-t border-gray-200 flex items-center px-2 py-1 bg-white">
+      <button
+        onClick={handleExecute}
+        className="ml-auto px-3 py-1 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-all"
+      >
+        Run Workflow
+      </button>
+    </div>
+  </div>
+</div>
+
       </div>
 
       {firstNodemodal && (
