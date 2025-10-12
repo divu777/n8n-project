@@ -104,10 +104,10 @@ export const deleteEdgeSchema = z.array(z.object({
 
 export const DELETE = async(req:NextRequest)=>{
     try {
-        console.log(JSON.stringify(req))
+       // console.log(JSON.stringify(req))
 
         const body = await req.json()
-                console.log(JSON.stringify(body)+"----body")
+              //  console.log(JSON.stringify(body)+"----body")
 
         const validInputs= deleteEdgeSchema.safeParse(body.edges)
 

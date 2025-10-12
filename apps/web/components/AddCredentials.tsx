@@ -32,7 +32,7 @@ const AddCredentials = ({
 
       setApiKeys((prev: any) => [...prev, data.data]);
 
-      console.log(JSON.stringify(data) + "=============");
+    //  console.log(JSON.stringify(data) + "=============");
 
       setaddNewCred(false);
     }

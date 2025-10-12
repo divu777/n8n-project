@@ -7,10 +7,10 @@ import { NextRequest, NextResponse } from "next/server";
 export const POST=async(_:NextRequest)=>{
     try {
         const session = await getServerSession(authOptions)
-        console.log(JSON.stringify(session)+"=====")
+      //  console.log(JSON.stringify(session)+"=====")
         const body = await _.json()
 
-       console.log(JSON.stringify(body))
+    //   console.log(JSON.stringify(body))
         if(!session || !session.user || !session.user.id){
             return NextResponse.json({
                 message:"Unauthorized",
@@ -66,7 +66,8 @@ export const POST=async(_:NextRequest)=>{
                 nodeId: validInputs.data.nodeId,
                 xCoordinate:validInputs.data.xCoordinate,
                 yCoordinate:validInputs.data.yCoordinate,
-                data:validInputs.data.data!
+                data:validInputs.data.data!,
+                isTrigger:validInputs.data.isTrigger! ?? false
             }
         })
 
@@ -138,10 +139,10 @@ export const deleteNodeSchema = z.object({
 
 export const DELETE=async(req:NextRequest)=>{
     try {
-        console.log(JSON.stringify(req))
+       // console.log(JSON.stringify(req))
 
         const body = await req.json()
-                console.log(JSON.stringify(body)+"----body")
+               // console.log(JSON.stringify(body)+"----body")
 
         const validInputs= deleteNodeSchema.safeParse(body)
 

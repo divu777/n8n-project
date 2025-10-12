@@ -8,7 +8,7 @@ export const GET = async (_: NextRequest) => {
   try {
     const session = await getServerSession(authOptions);
 
-    console.log(JSON.stringify(session) + "=======>");
+   // console.log(JSON.stringify(session) + "=======>");
 
     // console.log(JSON.stringify(session?.user))
     //         console.log(JSON.stringify(session?.user?.id ?? "no output"))

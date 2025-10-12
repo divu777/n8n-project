@@ -11,8 +11,8 @@ const page = async () => {
           headers: requestHeaders,
 
   });
-  console.log(JSON.stringify(data))
-    console.log(JSON.stringify(data.workflows))
+ // console.log(JSON.stringify(data))
+   // console.log(JSON.stringify(data.workflows))
 
   return (
     <div className="flex h-screen w-screen">

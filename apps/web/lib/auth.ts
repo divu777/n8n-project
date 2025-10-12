@@ -52,7 +52,7 @@ export const authOptions: NextAuthOptions = {
             },
           });
 
-          console.log(JSON.stringify(user));
+       //   console.log(JSON.stringify(user));
 
           if (!user) {
             console.log("+");

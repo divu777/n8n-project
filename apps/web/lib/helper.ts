@@ -30,7 +30,7 @@ export function decrypt(encryptedData: string) {
 
 export async function executeNode(node:Node){
   console.log("here")
-  console.log(JSON.stringify(node))
+ // console.log(JSON.stringify(node))
   const nodeType = node.type
 
   let resultObj
@@ -63,7 +63,7 @@ export const runExecution = async(nodes:Node[],edges:Edge[])=>{
   console.log("runnn")
   const nodeMap = new Map(nodes.map((n)=>[n.nodeId,n]))
 
-  console.log(JSON.stringify(nodeMap)+"--------map")
+  //console.log(JSON.stringify(nodeMap)+"--------map")
   const adjacent = new Map<string,string[]>();
 
   edges.forEach((edge)=>{
@@ -86,7 +86,7 @@ const triggernodes = nodes.filter((nodes)=>nodes.isTrigger==true)
   paths.add(nodeId)
   visited.add(nodeId)
 
-  console.log(JSON.stringify(nodeMap)+"node map")
+ // console.log(JSON.stringify(nodeMap)+"node map")
 
   const node = nodeMap.get(nodeId)!
   results[nodeId]=await executeNode(node)
@@ -99,7 +99,7 @@ const triggernodes = nodes.filter((nodes)=>nodes.isTrigger==true)
 
   paths.delete(nodeId)
 }
-console.log(JSON.stringify(triggernodes)+"------>trigger")
+//console.log(JSON.stringify(triggernodes)+"------>trigger")
 
 for(const triggernode of triggernodes){
   await dfs(triggernode.nodeId,new Set())
@@ -111,7 +111,6 @@ return results
 
 export const runExecutionstreamable = async(nodes:Node[],edges:Edge[],send:(data: any) => void)=>{
   const nodeMap = new Map(nodes.map((n)=>[n.nodeId,n]))
-
   const adjacent = new Map<string,string[]>();
 
   edges.forEach((edge)=>{
@@ -133,7 +132,7 @@ const triggernodes = nodes.filter((nodes)=>nodes.isTrigger==true)
   paths.add(nodeId)
   visited.add(nodeId)
 
-  console.log(JSON.stringify(nodeMap)+"node map")
+  //console.log(JSON.stringify(nodeMap)+"node map")
 
   const node = nodeMap.get(nodeId)!
    send({ event: "start-node", nodeId, type: node.type });
@@ -149,7 +148,7 @@ const triggernodes = nodes.filter((nodes)=>nodes.isTrigger==true)
 
   paths.delete(nodeId)
 }
-console.log(JSON.stringify(triggernodes)+"------>trigger")
+//console.log(JSON.stringify(triggernodes)+"------>trigger")
 
 for(const triggernode of triggernodes){
   await dfs(triggernode.nodeId,new Set())
@@ -160,7 +159,7 @@ for(const triggernode of triggernodes){
 
 
 export const executeLLM=async(node:Node) =>{
-  console.log("execute lllm")
+  //console.log("execute lllm")
   const config = node.config! as any
   const result = await callLLM(config)
   return result
@@ -192,7 +191,7 @@ export const callLLM=async(config:{
 
   const response = await llm.invoke(config.messages)
 
-  console.log("response-----"+JSON.stringify(response))
+ // console.log("response-----"+JSON.stringify(response))
 
   return {
     message:[response],

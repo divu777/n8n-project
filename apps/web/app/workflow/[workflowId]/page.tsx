@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Key } from "react";
 import {
   ReactFlow,
   applyNodeChanges,
@@ -32,8 +32,8 @@ export const nodeTypes = {
 
 export default function App() {
   const { workflowId } = useParams();
-  const [workflowResult, setWorkflowResult] = useState<Record<string,any>|null>(
-    null
+  const [workflowResult, setWorkflowResult] = useState<Record<string,any>>(
+    {}
   );
   interface Nodes {
     id: string;
@@ -132,8 +132,10 @@ export default function App() {
 
   // }
 
+  const [lastExecutedNode, setLastExecutedNode] = useState<string | null>(null);
+
   const handleExecute = async () => {
-  setWorkflowResult(null);
+  setWorkflowResult({});
   const res = await fetch(`/api/workflows/${workflowId}/execute`);
   const reader = res.body!.getReader();
   const decoder = new TextDecoder();
@@ -153,8 +155,16 @@ export default function App() {
       const data = JSON.parse(part);
 
       if (data.event === 'node-result') {
-        results[data.nodeId] = data.result;
-        setWorkflowResult({ ...results });
+        // results[data.nodeId] = data.result;
+        // setWorkflowResult({ ...results });
+        setWorkflowResult(prev => {
+          const existingLogs = prev[data.nodeId] || [];
+          return {
+            ...prev,
+            [data.nodeId]: [...existingLogs, data.result],
+          };
+        });
+        setLastExecutedNode(data.nodeId);
       }
     }
   }
@@ -281,7 +291,7 @@ export default function App() {
     });
 
 
-    console.log(JSON.stringify(respone.data) + "-------->>>");
+ //   console.log(JSON.stringify(respone.data) + "-------->>>");
     setNodes([
       {
         id: `n1`,
@@ -299,8 +309,8 @@ export default function App() {
         edges:deletedEdges
       }
     })
-    console.log(JSON.stringify(data)+"---deleted edge db")
-    console.log(JSON.stringify(deletedEdges) + "-------->deleted edges");
+   // console.log(JSON.stringify(data)+"---deleted edge db")
+ //   console.log(JSON.stringify(deletedEdges) + "-------->deleted edges");
     setNodes((prev) =>
       prev.map((prevnode) => {
         const lastSource = deletedEdges.some((e) => e.source == prevnode.id);
@@ -315,14 +325,14 @@ export default function App() {
     );
   };
   const handleDeleteNodes =async (deletedNodes: any[]) => {
-    console.log(JSON.stringify(deletedNodes)+"---------deleted nodes")
+    //console.log(JSON.stringify(deletedNodes)+"---------deleted nodes")
      const {data} = await axios.delete('http://localhost:3000/api/node',{
       data:{
         nodes:deletedNodes,
         workflowId
       }
     })
-        console.log(JSON.stringify(data)+"---deleted edge db")
+        //console.log(JSON.stringify(data)+"---deleted edge db")
 
     setNodes((prev) => {
       const remaining = prev.filter(
@@ -460,19 +470,24 @@ export default function App() {
         Execution Logs
       </h2>
       {workflowResult ? (
-        Object.entries(workflowResult).map(([nodeId, result]: any) => (
+        Object.entries(workflowResult).map(([nodeId, logs]: any) => (
           <div
             key={nodeId}
-            className={`mb-2 ${
-              selectedNodeID && selectedNodeID !== nodeId ? "hidden" : ""
-            }`}
+            className={`mb-2 p-1 rounded ${
+      lastExecutedNode === nodeId ? 'bg-green-100 animate-pulse' : ''
+    }`}
           >
             <div className="font-semibold text-gray-800">
               ▶ Node: {nodeId}
             </div>
-            <pre className="bg-gray-50 p-2 rounded text-gray-600 whitespace-pre-wrap">
-              {JSON.stringify(result, null, 2)}
-            </pre>
+            {logs.map((result: any, idx: Key | null | undefined) => (
+      <pre
+        key={idx}
+        className="bg-gray-50 p-2 rounded text-gray-600 whitespace-pre-wrap"
+      >
+        {JSON.stringify(result, null, 2)}
+      </pre>
+    ))}
           </div>
         ))
       ) : (

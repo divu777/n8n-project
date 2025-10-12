@@ -37,7 +37,7 @@ export const GET = async(_:NextRequest,{params}:{params:Promise<{workflowId:stri
             }   
         })
 
-        const result = await runExecution(workflowExist.nodes,workflowExist.edges)
+        // const result = await runExecution(workflowExist.nodes,workflowExist.edges)
 
         return new NextResponse(stream,{
             headers: {

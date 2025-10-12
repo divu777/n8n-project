@@ -4,7 +4,7 @@ import React from "react";
 
 const page = async() => {
   const session = await getServerSession(authOptions)
-  console.log(JSON.stringify(session))
+ // console.log(JSON.stringify(session))
   return <div>landing page</div>;
 };
 
