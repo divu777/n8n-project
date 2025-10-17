@@ -1,11 +1,28 @@
-import { authOptions } from "@/lib/auth";
-import { getServerSession } from "next-auth";
-import React from "react";
+import CTASection from "@/components/CTASection";
+import Footer from "@/components/Footer";
+import Hero from "@/components/Hero";
+import Navbar from "@/components/Navbar";
+import Testimonials from "@/components/Testimonials";
 
-const page = async() => {
-  const session = await getServerSession(authOptions)
- // console.log(JSON.stringify(session))
-  return <div>landing page</div>;
+
+const page = () => {
+  return (
+
+    <div className="flex flex-col gap-10 w-screen">
+  {/* navbar */}
+  <Navbar/>
+  {/* Hero section */}
+  <Hero/>
+
+
+  {/* feature */}
+  {/* testomonials */}
+  <Testimonials/>
+  <CTASection/>
+  {/* Footer */}
+  <Footer/>
+ </div>
+)
 };
 
 export default page;
