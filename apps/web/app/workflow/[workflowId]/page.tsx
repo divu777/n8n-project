@@ -23,7 +23,7 @@ import Config from "@/components/Config";
 import axios from "axios";
 import Agent from "@/components/Agent";
 
-export const nodeTypes = {
+ const nodeTypes = {
   addNode: AddNode,
   MANUAL: ManualTrigger,
   LLM: LLM,

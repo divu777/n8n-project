@@ -2,10 +2,12 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
-const navLinks = ["Home", "About", "Dashboard", "Pricing"];
+const navLinks = [{name:"Home",link:"/"}, {name:"About",link:"/about"},{name:"Dashboard",link:"/dashboard"},];
 
 const Navbar = () => {
+  const router = useRouter()
   return (
     <motion.nav
       initial={{ y: -25, opacity: 0 }}
@@ -21,9 +23,10 @@ const Navbar = () => {
 
         {/* Center: Links */}
         <ul className="hidden md:flex items-center gap-8 text-gray-600 font-medium h-full">
-          {navLinks.map((link) => (
+          {navLinks && navLinks.map((nav) => (
             <motion.li
-              key={link}
+              key={nav.name}
+              onClick={()=>router.push(`${nav.link}`)}
               className="relative flex items-center justify-center h-full px-6 cursor-pointer overflow-hidden"
             >
               {/* Tile flip effect */}
@@ -34,7 +37,7 @@ const Navbar = () => {
                 transition={{ duration: 0.4, ease: "easeOut" }}
                 style={{ transformOrigin: "bottom" }}
               />
-              <span className="relative z-10">{link}</span>
+              <span className="relative z-10">{nav.name}</span>
             </motion.li>
           ))}
         </ul>

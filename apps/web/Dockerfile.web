@@ -1,0 +1,41 @@
+FROM oven/bun:latest AS builder
+
+WORKDIR /app
+
+# Install OpenSSL for Prisma (must be before prisma generate)
+RUN apt-get update -y && apt-get install -y openssl
+
+# Copy entire monorepo
+COPY . .
+
+# Install all dependencies
+RUN bun install --frozen-lockfile
+
+# Generate Prisma Client (creates the client code in node_modules)
+RUN cd apps/web && bunx prisma generate
+
+# Build the web app (now Prisma Client is available)
+RUN bun turbo run build
+
+RUN test -d apps/web/.next && echo "✓ Build successful" || (echo "✗ Build failed" && exit 1)
+
+
+
+FROM oven/bun:latest AS runner
+
+WORKDIR /app
+
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/apps/web/.next ./apps/web/.next
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/web/package.json ./apps/web/package.json
+COPY --from=builder /app/apps/web/prisma ./apps/web/prisma
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=builder /app/packages ./packages
+
+WORKDIR /app/apps/web
+EXPOSE 3000
+
+CMD bunx prisma migrate deploy && bun start

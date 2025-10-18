@@ -21,7 +21,7 @@ export default function LoginPage() {
     if (res?.error) {
       setError("Invalid credentials")
     } else {
-      router.push("/") // redirect to homepage after login
+      router.push("/dashboard") // redirect to homepage after login
     }
   }
 

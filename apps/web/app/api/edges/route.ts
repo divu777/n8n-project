@@ -19,7 +19,7 @@ export const GET = async(_:NextRequest)=>{
         })
     }
 }
-import z, { success } from "zod/v4"
+import z, { success } from "zod"
 
 const newEdgeSchema = z.object({
     sourceId:z.string(),
@@ -60,7 +60,7 @@ export const POST = async(req:NextRequest)=>{
     }
 }
 
-export const updateEdgeSchema = z.object({
+ const updateEdgeSchema = z.object({
     id:z.string(),
     sourceId:z.string().optional(),
     targetId:z.string().optional()
@@ -98,7 +98,7 @@ export const PUT = async(req:NextRequest)=>{
         })    }
 }
 
-export const deleteEdgeSchema = z.array(z.object({
+ const deleteEdgeSchema = z.array(z.object({
     id:z.string()
 }))
 

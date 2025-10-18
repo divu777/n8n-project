@@ -130,8 +130,8 @@ export const PUT = async(req:NextRequest)=>{
     }
 }
 
-import z from 'zod/v4'
-export const deleteNodeSchema = z.object({
+import z from 'zod'
+ const deleteNodeSchema = z.object({
     workflowId:z.string(),
     nodes:z.array(z.object({
     id:z.string()
