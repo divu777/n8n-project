@@ -7,7 +7,7 @@ const page = async () => {
  const requestHeaders = {
       'Cookie': (await headersList).get('cookie'),
     };
-  const { data } = await axios.get("http://localhost:3000/api/workflows",{
+  const { data } = await axios.get(`${process.env.BACKEND_URL}/api/workflows`,{
           headers: requestHeaders,
 
   });

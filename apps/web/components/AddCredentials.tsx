@@ -23,7 +23,7 @@ const AddCredentials = ({
     console.log("a" + apiKeyRef.current?.value);
     if (provider && apiKeyRef.current?.value) {
       const { data } = await axios.post(
-        "http://localhost:3000/api/credentials/" + userId,
+        `${process.env.BACKEND_URL}/api/credentials/` + userId,
         {
           provider,
           api_key: apiKeyRef.current.value,
