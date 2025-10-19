@@ -4,10 +4,10 @@ import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import React from 'react'
 
-const layout = ({children}:{children:React.ReactNode}) => {
-    const session = getServerSession(authOptions)
+const layout = async({children}:{children:React.ReactNode}) => {
+    const session = await getServerSession(authOptions)
     
-    if(!session){
+            if(!session || !session.user || !session.user.id){
         redirect("/login")
     }
   return (

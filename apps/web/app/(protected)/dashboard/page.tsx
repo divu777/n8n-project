@@ -2,6 +2,7 @@ import Home from "@/components/Home";
 import axios from "axios";
 import { headers } from "next/headers";
 
+export const dynamic = "force-dynamic"; 
 const page = async () => {
  const headersList = headers();
  const requestHeaders = {
@@ -22,3 +23,4 @@ const page = async () => {
 };
 
 export default page;
+
