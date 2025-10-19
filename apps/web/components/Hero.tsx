@@ -1,9 +1,11 @@
+'use client'
 import React from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
-import Home from "./Spline";
 import Spline from "@splinetool/react-spline";
+import { redirect, useRouter } from "next/navigation";
 
 const Hero = () => {
+  const router = useRouter()
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-gray-50 to-white p-20">
       <section className="relative min-h-screen flex items-center px-8">
@@ -31,7 +33,10 @@ const Hero = () => {
 
           {/* Buttons */}
           <div className="flex items-center space-x-6">
-            <button className="group px-10 py-5 bg-red-500 text-white hover:bg-red-600 transition-all duration-300 flex items-center space-x-3 font-light rounded-sm shadow-lg hover:shadow-xl">
+            <button className="group px-10 py-5 bg-red-500 text-white hover:bg-red-600 transition-all duration-300 flex items-center space-x-3 font-light rounded-sm shadow-lg hover:shadow-xl"
+                    onClick={()=>router.push("/login")}
+
+            >
               <span>Start Free Trial</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" strokeWidth={1.5} />
             </button>

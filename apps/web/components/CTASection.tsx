@@ -1,7 +1,9 @@
-
+'use client'
+import { redirect, useRouter } from "next/navigation";
 import React from "react";
 
 export default function CTASection() {
+  const router = useRouter()
   return (
      <div className="w-full bg-gradient-to-b from-gray-50 to-white flex flex-col items-center justify-center py-20 px-8 gap-12">
       {/* Text Content */}
@@ -19,7 +21,10 @@ export default function CTASection() {
 
       {/* Buttons */}
       <div className="flex flex-col sm:flex-row w-full max-w-6xl gap-4">
-        <button className="flex-1 bg-gradient-to-r from-[#ff4b2b] to-[#ff6200] text-white text-lg font-semibold py-5 h-48 rounded-md shadow-lg hover:opacity-90 transition-all duration-300">
+        <button className="flex-1 bg-gradient-to-r from-[#ff4b2b] to-[#ff6200] text-white text-lg font-semibold py-5 h-48 rounded-md shadow-lg hover:opacity-90 transition-all duration-300"
+                    onClick={()=>router.push("/login")}
+
+        >
           Start free with email →
         </button>
         <button className="flex-1 bg-gradient-to-r from-[#ff6200] to-[#ff4500] text-white text-lg font-semibold py-5 h-48 rounded-md shadow-lg hover:opacity-90 transition-all duration-300">

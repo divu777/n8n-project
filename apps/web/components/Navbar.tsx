@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 
-const navLinks = [{name:"Home",link:"/"}, {name:"About",link:"/about"},{name:"Dashboard",link:"/dashboard"},];
+const navLinks = [{name:"Home",link:"/"}, {name:"About",link:"/"},{name:"Dashboard",link:"/dashboard"},];
 
 const Navbar = () => {
   const router = useRouter()
@@ -43,7 +43,9 @@ const Navbar = () => {
         </ul>
 
         {/* Right: Get Started */}
-        <div className="ml-8 h-full flex items-center">
+        <div className="ml-8 h-full flex items-center"
+        onClick={()=>router.push("/login")}
+        >
           <motion.button
             whileHover={{ scale: 1.02 }}
             className="h-full px-8 bg-red-500 text-white font-semibold shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center"

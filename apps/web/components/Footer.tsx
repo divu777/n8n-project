@@ -13,7 +13,7 @@ export default function Footer() {
   const navItems = [
     { name: "HOME", path: "/" },
     { name: "DASHBOARD", path: "/dashboard" },
-    { name: "ABOUT ME", path: "/about-me" },
+    { name: "ABOUT ME", path: "/" },
   ];
   const socialLinks = [
     { name: "GitHub", icon: Github, href: "https://github.com/divu777" },
