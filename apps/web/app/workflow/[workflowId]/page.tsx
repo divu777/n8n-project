@@ -55,7 +55,7 @@ export default function App() {
 
   const fetchWorflowData = async () => {
     const { data } = await axios.get(
-     `${process.env.NEXT_PUBLIC_BACKEND_URL}api/workflows/` + workflowId
+     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/workflows/` + workflowId
     );
     //console.log(JSON.stringify(data)+"------nodeexit")
 
