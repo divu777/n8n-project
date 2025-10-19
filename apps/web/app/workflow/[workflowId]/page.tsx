@@ -372,10 +372,10 @@ export default function App() {
 
   const handleSave = () => {
     //console.log("Saving workflow:", {
-      workflowId,
-      nodes,
-      edges,
-    });
+    //   workflowId,
+    //   nodes,
+    //   edges,
+    // });
    // alert("Workflow saved!");
   };
 
