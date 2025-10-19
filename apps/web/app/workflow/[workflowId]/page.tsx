@@ -131,7 +131,7 @@ export default function App() {
 
   const handleExecute = async () => {
   setWorkflowResult({});
-  const res = await fetch(`/api/workflows/${workflowId}/execute`);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/workflows/${workflowId}/execute`);
   const reader = res.body!.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
