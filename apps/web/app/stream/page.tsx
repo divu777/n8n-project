@@ -13,7 +13,7 @@ export default function Page() {
       while (!done) {
         const { value, done: readerDone } = await reader.read();
         if (value) {
-          console.log(decoder.decode(value));
+          //console.log(decoder.decode(value));
         }
         done = readerDone;
       }

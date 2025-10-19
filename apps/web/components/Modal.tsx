@@ -36,7 +36,7 @@ const Modal = ({
   );
 
   const handleTriggerSelect = (trigger: { id: string; title: string; description: string; icon: string; node: string; }) => {
-    console.log("Selected trigger:", trigger);
+    //console.log("Selected trigger:", trigger);
 
     handleNewNode(trigger);
     onClose();

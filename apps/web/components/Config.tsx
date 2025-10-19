@@ -86,7 +86,7 @@ const Config = ({
                   e.target.selectedOptions[0]!.getAttribute("data-provider");
 
                 if (value === "Add new credentials...") {
-                  console.log("Add new credentials triggered");
+                 // console.log("Add new credentials triggered");
                   setaddNewCred(true);
                 } else {
                   setSelectedKey(value);

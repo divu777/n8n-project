@@ -19,8 +19,8 @@ const AddCredentials = ({
 
   const apiKeyRef = useRef<HTMLInputElement>(null);
   const handleAddNewCred = async () => {
-    console.log("P" + provider);
-    console.log("a" + apiKeyRef.current?.value);
+   // console.log("P" + provider);
+    //console.log("a" + apiKeyRef.current?.value);
     if (provider && apiKeyRef.current?.value) {
       const { data } = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/credentials/` + userId,

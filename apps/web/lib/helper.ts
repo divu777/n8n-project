@@ -28,7 +28,7 @@ export function decrypt(encryptedData: string) {
 
 
 export async function executeNode(node:Node){
-  console.log("here")
+ // console.log("here")
  // console.log(JSON.stringify(node))
   const nodeType = node.type
 
@@ -59,7 +59,7 @@ return resultObj
 }
 
 export const runExecution = async(nodes:Node[],edges:Edge[])=>{
-  console.log("runnn")
+  //console.log("runnn")
   const nodeMap = new Map(nodes.map((n)=>[n.nodeId,n]))
 
   //console.log(JSON.stringify(nodeMap)+"--------map")
@@ -76,12 +76,12 @@ const triggernodes = nodes.filter((nodes)=>nodes.isTrigger==true)
   const results:Record<string,any> = { }
 
   async function dfs(nodeId:string,paths:Set<string>){
-    console.log("dfs")
+   // console.log("dfs")
   if(paths.has(nodeId)) return 
   if(visited.has(nodeId)) return 
 
 
-  console.log("insidee")
+ // console.log("insidee")
   paths.add(nodeId)
   visited.add(nodeId)
 
@@ -122,12 +122,12 @@ const triggernodes = nodes.filter((nodes)=>nodes.isTrigger==true)
 
 
   async function dfs(nodeId:string,paths:Set<string>){
-    console.log("dfs")
+   // console.log("dfs")
   if(paths.has(nodeId)) return 
   if(visited.has(nodeId)) return 
 
 
-  console.log("insidee")
+  //console.log("insidee")
   paths.add(nodeId)
   visited.add(nodeId)
 

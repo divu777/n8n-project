@@ -40,11 +40,11 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          console.log("==");
+          //console.log("==");
 
           const salt = bcrypt.genSaltSync(10);
           const hashedPassword = bcrypt.hashSync(password, salt);
-          console.log(hashedPassword);
+         // console.log(hashedPassword);
           const user = await prisma.user.create({
             data: {
               username,
@@ -55,7 +55,7 @@ export const authOptions: NextAuthOptions = {
        //   console.log(JSON.stringify(user));
 
           if (!user) {
-            console.log("+");
+           // console.log("+");
             return null;
           }
 

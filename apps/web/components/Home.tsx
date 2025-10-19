@@ -18,7 +18,7 @@ const Home = ({ workflowsData }: { workflowsData: WorkflowInterface[] }) => {
   const nameRef = useRef<HTMLInputElement>(null) 
   const router = useRouter();
   const session = useSession()
-console.log(JSON.stringify(session)+"=======")
+//console.log(JSON.stringify(session)+"=======")
 
 if(!session || !session.data){
   return
@@ -26,10 +26,10 @@ if(!session || !session.data){
 
 
   const handleCreateWorkflow = async()=>{
-    console.log(nameRef.current?.value)
+   // console.log(nameRef.current?.value)
 
     if(nameRef.current?.value){
-      console.log("bere")
+      //console.log("bere")
       
       const {data} = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/workflows`,{
           userId:session.data.user.id,
@@ -40,7 +40,7 @@ if(!session || !session.data){
             setWorkflows((prev)=>[...prev,data.data])
 
           }
-          console.log(JSON.stringify(data))
+          //console.log(JSON.stringify(data))
         }
                     setModal(false)
 

@@ -42,7 +42,7 @@ const FirstNodeModal = ({
   );
 
   const handleTriggerSelect = (trigger: any) => {
-    console.log("Selected trigger:", trigger);
+    //console.log("Selected trigger:", trigger);
 
     handleFirstNode(trigger);
     onClose();

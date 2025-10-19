@@ -119,7 +119,7 @@ export default function App() {
     }
 
     if(!edgesExist || edgesExist.length===0){
-      console.log("here")
+     // console.log("here")
       setEdges([])
     }
     //  console.log(JSON.stringify(data) + "---------g-");
@@ -237,7 +237,7 @@ export default function App() {
         workflowId,
       });
 
-      console.log("Response:", response.data);
+      //console.log("Response:", response.data);
     } catch (error) {
       console.error("Error saving node:", error);
     }
@@ -371,12 +371,12 @@ export default function App() {
   }, []);
 
   const handleSave = () => {
-    console.log("Saving workflow:", {
+    //console.log("Saving workflow:", {
       workflowId,
       nodes,
       edges,
     });
-    alert("Workflow saved!");
+   // alert("Workflow saved!");
   };
 
 
