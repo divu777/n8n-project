@@ -31,7 +31,7 @@ if(!session || !session.data){
     if(nameRef.current?.value){
       console.log("bere")
       
-      const {data} = await axios.post(`${process.env.BACKEND_URL}/api/workflows`,{
+      const {data} = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/workflows`,{
           userId:session.data.user.id,
           name:nameRef.current.value 
         })

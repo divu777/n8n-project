@@ -55,7 +55,7 @@ export default function App() {
 
   const fetchWorflowData = async () => {
     const { data } = await axios.get(
-     `${process.env.BACKEND_URL}api/workflows/` + workflowId
+     `${process.env.NEXT_PUBLIC_BACKEND_URL}api/workflows/` + workflowId
     );
     //console.log(JSON.stringify(data)+"------nodeexit")
 
@@ -219,7 +219,7 @@ export default function App() {
     setShowConfig(false);
 
     try {
-      const response = await axios.post(`${process.env.BACKEND_URL}/api/node`, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/node`, {
         nodeId: newNode.id,
         xCoordinate: newX,
         yCoordinate: newY,
@@ -231,7 +231,7 @@ export default function App() {
         config,
       });
 
-      const response2 = await axios.post(`${process.env.BACKEND_URL}/api/edges`, {
+      const response2 = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/edges`, {
         sourceId: selectedNode.id,
         targetId: newNode.id,
         workflowId,
@@ -273,7 +273,7 @@ export default function App() {
     icon: string;
     node: string;
   }) => {
-    const respone = await axios.post(`${process.env.BACKEND_URL}/api/node`, {
+    const respone = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/node`, {
       type: data.id,
       workflowId,
       nodeId: "n1",
@@ -299,7 +299,7 @@ export default function App() {
 
   const handleDeleteEdges = async(deletedEdges: any[]) => {
 
-    const {data} = await axios.delete(`${process.env.BACKEND_URL}/api/edges`,{
+    const {data} = await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/edges`,{
       data:{
         edges:deletedEdges
       }
@@ -321,7 +321,7 @@ export default function App() {
   };
   const handleDeleteNodes =async (deletedNodes: any[]) => {
     //console.log(JSON.stringify(deletedNodes)+"---------deleted nodes")
-     const {data} = await axios.delete(`${process.env.BACKEND_URL}/api/node`,{
+     const {data} = await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/node`,{
       data:{
         nodes:deletedNodes,
         workflowId
@@ -360,7 +360,7 @@ export default function App() {
 
   const onConnect = useCallback(async(params: any) => {
     //console.log(JSON.stringify(params)+"0------connect")
-    const {data} = await axios.post(`${process.env.BACKEND_URL}/api/edges`,{
+    const {data} = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/edges`,{
       workflowId,
       sourceId:params.source,
       targetId:params.target
