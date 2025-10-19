@@ -41,9 +41,7 @@ export const GET = async(_:NextRequest,{params}:{params:Promise<{workflowId:stri
         return new NextResponse(stream,{
             headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-cache",
-      "Connection": "keep-alive",
-      "Transfer-Encoding": "chunked",
+    "Cache-Control": "no-cache",
     },
         })
         
