@@ -2,6 +2,7 @@ import prisma from '@/app/db';
 import { Edge, Node } from '@prisma/client';
 import crypto from 'crypto'
 import { initChatModel } from 'langchain/chat_models/universal';
+import { success } from 'zod';
 const algo = 'aes-256-gcm'
 const SECRET_KEY = crypto.scryptSync(process.env.SECRET_KEY!,'salt',32)
 const IV = crypto.randomBytes(16);
@@ -170,30 +171,56 @@ export const callLLM=async(config:{
   model:string,
   api_key_id:string
 })=>{
-  const credentials = await prisma.credentials.findUnique({
-    where:{
-      id:config.api_key_id
+  try {
+    const credentials = await prisma.credentials.findUnique({
+      where:{
+        id:config.api_key_id
+      }
+    })
+  
+    if(!credentials){
+  
+      return{
+        message:"Error credentials provided does not exist. Change LLM config and re-run",
+        success:false
+      }
     }
-  })
+    process.env.OPENAI_API_KEY= decrypt(credentials.apiKey)
+    //console.log(process.env.OPENAI_API_KEY+"----->api key")
+    const llm = await initChatModel(config.model,{
+      modelProvider:(credentials.Provider).toLowerCase(),
+    })
+  
+    const response = await llm.invoke(config.messages)
+  
+   // console.log("response-----"+JSON.stringify(response))
+  
+    return {
+      message:[response],
+      success:true
+    }
+  } catch (error:any) {
+    console.log("Error in using LLM node, "+error);
 
-  if(!credentials){
+     if (error && error.status === 401) {
+    return {
+      message: error.error.message,
+      success: false
+    };
+  }
+
+  //console.log(JSON.stringify(error)+"---->log")
+
+  // If the error is a string or contains the 401 message inside
+  if (typeof error === "string" && error.includes("401")) {
+    return {
+      message: "Authentication failed (401): Invalid API key provided. Please check your configuration.",
+      success: false
+    };
+  }
     return{
-      message:"Error credentials provided does not exist. Change LLM config and re-run",
+      message:"Error in Executing LLM node, please re-configure the node. If it continues contact the dev and let him know.",
       success:false
     }
-  }
-  process.env.OPENAI_API_KEY= decrypt(credentials.apiKey)
-  const llm = await initChatModel(config.model,{
-    modelProvider:(credentials.Provider).toLowerCase(),
-  
-  })
-
-  const response = await llm.invoke(config.messages)
-
- // console.log("response-----"+JSON.stringify(response))
-
-  return {
-    message:[response],
-    success:true
   }
 }

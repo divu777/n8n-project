@@ -24,18 +24,16 @@ import axios from "axios";
 import Agent from "@/components/Agent";
 import { AnimatePresence, motion } from "framer-motion";
 
- const nodeTypes = {
+const nodeTypes = {
   addNode: AddNode,
   MANUAL: ManualTrigger,
   LLM: LLM,
-  AGENT:Agent
+  AGENT: Agent,
 };
 
 export default function App() {
   const { workflowId } = useParams();
-  const [workflowResult, setWorkflowResult] = useState<Record<string,any>>(
-    {}
-  );
+  const [workflowResult, setWorkflowResult] = useState<Record<string, any>>({});
   interface Nodes {
     id: string;
     nodeId: string;
@@ -56,7 +54,7 @@ export default function App() {
 
   const fetchWorflowData = async () => {
     const { data } = await axios.get(
-     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/workflows/` + workflowId
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/workflows/` + workflowId
     );
     //console.log(JSON.stringify(data)+"------nodeexit")
 
@@ -83,7 +81,7 @@ export default function App() {
             data: {
               ...data,
               setAddNewNodeModal,
-              handleExecute : node.type=='MANUAL' ? handleExecute : undefined
+              handleExecute: node.type == "MANUAL" ? handleExecute : undefined,
             },
             type: node.type,
           };
@@ -103,74 +101,73 @@ export default function App() {
       ]);
     }
 
-    const edgesExist = data.data.edges
+    const edgesExist = data.data.edges;
     //console.log("edgg========"+JSON.stringify(edgesExist))
-    if(edgesExist && edgesExist.length >0){
-      const edges = edgesExist.map((edge: { id: string; sourceId: string; targetId: string; })=>{
-        return{
-          id:edge.id,
-          source:edge.sourceId,
-          target:edge.targetId
+    if (edgesExist && edgesExist.length > 0) {
+      const edges = edgesExist.map(
+        (edge: { id: string; sourceId: string; targetId: string }) => {
+          return {
+            id: edge.id,
+            source: edge.sourceId,
+            target: edge.targetId,
+          };
         }
-      })
+      );
 
       //console.log(edges)
 
-      setEdges(edges)
+      setEdges(edges);
     }
 
-    if(!edgesExist || edgesExist.length===0){
-     // console.log("here")
-      setEdges([])
+    if (!edgesExist || edgesExist.length === 0) {
+      // console.log("here")
+      setEdges([]);
     }
     //  console.log(JSON.stringify(data) + "---------g-");
   };
 
-  
-
   const [lastExecutedNode, setLastExecutedNode] = useState<string | null>(null);
 
   const handleExecute = async () => {
-  setWorkflowResult({});
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/workflows/${workflowId}/execute`);
-  const reader = res.body!.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
+    setWorkflowResult({});
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/workflows/${workflowId}/execute`
+    );
+    const reader = res.body!.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
 
-  const results: Record<string, any> = {};
+    const results: Record<string, any> = {};
 
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const parts = buffer.split('\n');
-    buffer = parts.pop()!;
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split("\n");
+      buffer = parts.pop()!;
 
-    for (const part of parts) {
-      if (!part.trim()) continue;
-      const data = JSON.parse(part);
+      for (const part of parts) {
+        if (!part.trim()) continue;
+        const data = JSON.parse(part);
 
-      if (data.event === 'node-result') {
-        // results[data.nodeId] = data.result;
-        // setWorkflowResult({ ...results });
-        setWorkflowResult(prev => {
-          const existingLogs = prev[data.nodeId] || [];
-          return {
-            ...prev,
-            [data.nodeId]: [...existingLogs, data.result],
-          };
-        });
-        setLastExecutedNode(data.nodeId);
+        if (data.event === "node-result") {
+          // results[data.nodeId] = data.result;
+          // setWorkflowResult({ ...results });
+          setWorkflowResult((prev) => {
+            const existingLogs = prev[data.nodeId] || [];
+            return {
+              ...prev,
+              [data.nodeId]: [...existingLogs, data.result],
+            };
+          });
+          setLastExecutedNode(data.nodeId);
+        }
       }
     }
-  }
-};
-
-
+  };
 
   useEffect(() => {
     fetchWorflowData();
-
   }, []);
 
   const [nodes, setNodes] = useState<any[]>([]);
@@ -220,23 +217,29 @@ export default function App() {
     setShowConfig(false);
 
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/node`, {
-        nodeId: newNode.id,
-        xCoordinate: newX,
-        yCoordinate: newY,
-        type: selectedNodeID,
-        workflowId,
-        data: {
-          hasChild: false,
-        },
-        config,
-      });
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/node`,
+        {
+          nodeId: newNode.id,
+          xCoordinate: newX,
+          yCoordinate: newY,
+          type: selectedNodeID,
+          workflowId,
+          data: {
+            hasChild: false,
+          },
+          config,
+        }
+      );
 
-      const response2 = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/edges`, {
-        sourceId: selectedNode.id,
-        targetId: newNode.id,
-        workflowId,
-      });
+      const response2 = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/edges`,
+        {
+          sourceId: selectedNode.id,
+          targetId: newNode.id,
+          workflowId,
+        }
+      );
 
       //console.log("Response:", response.data);
     } catch (error) {
@@ -244,11 +247,11 @@ export default function App() {
     }
   };
 
-//   useEffect(()=>{
-//   console.log(JSON.stringify(edges)+"-------edg"),
-//     console.log(JSON.stringify(nodes)+"-------nodeee")
+  //   useEffect(()=>{
+  //   console.log(JSON.stringify(edges)+"-------edg"),
+  //     console.log(JSON.stringify(nodes)+"-------nodeee")
 
-// },[edges,nodes])
+  // },[edges,nodes])
 
   useEffect(() => {
     setNodes((nds) =>
@@ -274,39 +277,43 @@ export default function App() {
     icon: string;
     node: string;
   }) => {
-    const respone = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/node`, {
-      type: data.id,
-      workflowId,
-      nodeId: "n1",
-      xCoordinate: 100,
-      yCoordinate: 0,
-      data: {
-        hasChild: false,
-      },
-      isTrigger:true
-    });
+    const respone = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/node`,
+      {
+        type: data.id,
+        workflowId,
+        nodeId: "n1",
+        xCoordinate: 100,
+        yCoordinate: 0,
+        data: {
+          hasChild: false,
+        },
+        isTrigger: true,
+      }
+    );
 
-
- //   console.log(JSON.stringify(respone.data) + "-------->>>");
+    //   console.log(JSON.stringify(respone.data) + "-------->>>");
     setNodes([
       {
         id: `n1`,
         position: { x: 100, y: 0 },
-        data: { setAddNewNodeModal,handleExecute, hasChild:false },
+        data: { setAddNewNodeModal, handleExecute, hasChild: false },
         type: data.id ?? "input",
       },
     ]);
   };
 
-  const handleDeleteEdges = async(deletedEdges: any[]) => {
-
-    const {data} = await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/edges`,{
-      data:{
-        edges:deletedEdges
+  const handleDeleteEdges = async (deletedEdges: any[]) => {
+    const { data } = await axios.delete(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/edges`,
+      {
+        data: {
+          edges: deletedEdges,
+        },
       }
-    })
-   // console.log(JSON.stringify(data)+"---deleted edge db")
- //   console.log(JSON.stringify(deletedEdges) + "-------->deleted edges");
+    );
+    // console.log(JSON.stringify(data)+"---deleted edge db")
+    //   console.log(JSON.stringify(deletedEdges) + "-------->deleted edges");
     setNodes((prev) =>
       prev.map((prevnode) => {
         const lastSource = deletedEdges.some((e) => e.source == prevnode.id);
@@ -320,15 +327,18 @@ export default function App() {
       })
     );
   };
-  const handleDeleteNodes =async (deletedNodes: any[]) => {
+  const handleDeleteNodes = async (deletedNodes: any[]) => {
     //console.log(JSON.stringify(deletedNodes)+"---------deleted nodes")
-     const {data} = await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/node`,{
-      data:{
-        nodes:deletedNodes,
-        workflowId
+    const { data } = await axios.delete(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/node`,
+      {
+        data: {
+          nodes: deletedNodes,
+          workflowId,
+        },
       }
-    })
-        //console.log(JSON.stringify(data)+"---deleted edge db")
+    );
+    //console.log(JSON.stringify(data)+"---deleted edge db")
 
     setNodes((prev) => {
       const remaining = prev.filter(
@@ -359,13 +369,16 @@ export default function App() {
     setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot));
   }, []);
 
-  const onConnect = useCallback(async(params: any) => {
+  const onConnect = useCallback(async (params: any) => {
     //console.log(JSON.stringify(params)+"0------connect")
-    const {data} = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/edges`,{
-      workflowId,
-      sourceId:params.source,
-      targetId:params.target
-    })
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/edges`,
+      {
+        workflowId,
+        sourceId: params.source,
+        targetId: params.target,
+      }
+    );
 
     //console.log(JSON.stringify(data)+"------connnext log ")
     setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot));
@@ -377,11 +390,8 @@ export default function App() {
     //   nodes,
     //   edges,
     // });
-   // alert("Workflow saved!");
+    // alert("Workflow saved!");
   };
-
-
-  
 
   return (
     <div className="w-screen h-screen flex">
@@ -432,167 +442,105 @@ export default function App() {
           </ReactFlow>
         </div>
 
-        {/* 🔹 Bottom Console Section (Streaming Logs) */}
-{/* <div
-  style={{ height: "25%", width: "100%" }}
-  className="border-t border-gray-200 bg-gray-50 flex"
->
-  <div className="w-1/3 border-r border-gray-300 overflow-y-auto p-2">
-    <h2 className="text-xs font-semibold text-gray-600 mb-2">
-      Nodes in Workflow
-    </h2>
-    <ul className="space-y-1">
-      {nodes.map((n) => (
-        <li
-          key={n.id}
-          onClick={() => setSelectedNodeId(n.id)}
-          className={`px-2 py-1 rounded-md text-xs cursor-pointer ${
-            selectedNodeID === n.id
-              ? "bg-blue-100 text-blue-700 font-medium"
-              : "hover:bg-gray-100 text-gray-700"
-          }`}
+        <div
+          style={{ height: "28%", width: "100%" }}
+          className="border-t border-gray-200 bg-gray-50 flex shadow-inner"
         >
-          {n.type}
-        </li>
-      ))}
-    </ul>
-  </div>
-
-  <div className="w-2/3 flex flex-col">
-    <div className="flex-1 overflow-y-auto p-2 text-xs font-mono text-gray-700 bg-white">
-      <h2 className="text-xs font-semibold text-gray-600 mb-2">
-        Execution Logs
-      </h2>
-      {workflowResult ? (
-        Object.entries(workflowResult).map(([nodeId, logs]: any) => (
-          <div
-            key={nodeId}
-            className={`mb-2 p-1 rounded ${
-      lastExecutedNode === nodeId ? 'bg-green-100 animate-pulse' : ''
-    }`}
-          >
-            <div className="font-semibold text-gray-800">
-              ▶ Node: {nodeId}
-            </div>
-            {logs.map((result: any, idx: Key | null | undefined) => (
-      <pre
-        key={idx}
-        className="bg-gray-50 p-2 rounded text-gray-600 whitespace-pre-wrap"
-      >
-        {JSON.stringify(result, null, 2)}
-      </pre>
-    ))}
-          </div>
-        ))
-      ) : (
-        <div className="text-gray-400 italic">No results yet...</div>
-      )}
-    </div>
-
-    <div className="border-t border-gray-200 flex items-center px-2 py-1 bg-white">
-      <button
-        onClick={handleExecute}
-        className="ml-auto px-3 py-1 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-all"
-      >
-        Run Workflow
-      </button>
-    </div>
-  </div>
-</div> */}
-
-   <div
-      style={{ height: "28%", width: "100%" }}
-      className="border-t border-gray-200 bg-gray-50 flex shadow-inner"
-    >
-      <div className="w-1/3 border-r border-gray-200 overflow-y-auto p-4 bg-white">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">
-          Nodes in Workflow
-        </h2>
-        <ul className="space-y-1.5">
-          {nodes.map((n: any) => (
-            <motion.li
-              key={n.id}
-              onClick={() => setSelectedNodeId(n.id)}
-              whileHover={{ scale: 1.02 }}
-              className={`px-3 py-1.5 rounded-md text-sm cursor-pointer transition-all duration-200 ${
-                selectedNodeID === n.id
-                  ? "bg-red-100 text-red-700 font-medium"
-                  : "hover:bg-gray-100 text-gray-700"
-              }`}
-            >
-              {n.type}
-            </motion.li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="w-2/3 flex flex-col bg-gray-50">
-        <div className="flex-1 overflow-y-auto p-4 text-xs font-mono text-gray-800">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold text-gray-700">
-              Execution Logs
+          <div className="w-1/3 border-r border-gray-200 overflow-y-auto p-4 bg-white">
+            <h2 className="text-sm font-semibold text-gray-700 mb-3">
+              Nodes in Workflow
             </h2>
-          </div>
-
-          <AnimatePresence>
-            {workflowResult ? (
-              Object.entries(workflowResult).map(([nodeId, logs]: any) => (
-                <motion.div
-                  key={nodeId}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -5 }}
-                  className={`mb-3 p-2 rounded-lg border text-xs transition-all duration-200 ${
-                    lastExecutedNode === nodeId
-                      ? "border-green-300 bg-green-50 shadow-sm"
-                      : "border-gray-200 bg-white"
+            <ul className="space-y-1.5">
+              {nodes.map((n: any) => (
+                <motion.li
+                  key={n.id}
+                  onClick={() => setSelectedNodeId(n.id)}
+                  whileHover={{ scale: 1.02 }}
+                  className={`px-3 py-1.5 rounded-md text-sm cursor-pointer transition-all duration-200 ${
+                    selectedNodeID === n.id
+                      ? "bg-red-100 text-red-700 font-medium"
+                      : "hover:bg-gray-100 text-gray-700"
                   }`}
                 >
-                  <div
-                    className={`font-semibold mb-1 flex items-center gap-1 ${
-                      lastExecutedNode === nodeId
-                        ? "text-green-700"
-                        : "text-gray-800"
-                    }`}
-                  >
-                    ▶ Node: {nodeId}
-                  </div>
-                  {logs.map((result: any, idx: number) => (
-                    <pre
-                      key={idx}
-                      className="bg-gray-50 border border-gray-100 p-2 rounded text-gray-700 whitespace-pre-wrap overflow-x-auto"
+                  {n.type}
+                </motion.li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="w-2/3 flex flex-col bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-4 text-xs font-mono text-gray-800">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-sm font-semibold text-gray-700">
+                  Execution Logs
+                </h2>
+              </div>
+
+              <AnimatePresence>
+                {workflowResult ? (
+                  Object.entries(workflowResult).map(([nodeId, logs]: any) => (
+                    <motion.div
+                      key={nodeId}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      className={`mb-3 p-2 rounded-lg border text-xs transition-all duration-200 ${
+                        lastExecutedNode === nodeId
+                          ? "border-green-300  shadow-sm"
+                          : "border-gray-200 bg-white"
+                      }
+                  ${logs.some((log: any) => log.success === false) ? "blink-red border-red-300" : ""}
+                  `}
                     >
-                      {JSON.stringify(result, null, 2)}
-                    </pre>
-                  ))}
-                </motion.div>
-              ))
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-gray-400 italic text-sm mt-6"
+                      <div
+                        className={`font-semibold mb-1 flex items-center gap-1 ${
+                          logs.some((log: any) => log.success === false)
+                            ? "text-red-700"
+                            : lastExecutedNode === nodeId
+                              ? "text-green-700"
+                              : "text-gray-800"
+                        }`}
+                      >
+                        ▶ Node: {nodeId}
+                      </div>
+                      {logs.map((result: any, idx: number) => (
+                        <pre
+                          key={idx}
+                          className={`bg-gray-50 border border-gray-100 p-2 rounded whitespace-pre-wrap overflow-x-auto ${
+                            result.success === false
+                              ? "border-red-300 text-red-700"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          {JSON.stringify(result, null, 2)}
+                        </pre>
+                      ))}
+                    </motion.div>
+                  ))
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-gray-400 italic text-sm mt-6"
+                  >
+                    No results yet...
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="border-t border-gray-200 flex items-center justify-end px-4 py-2 bg-white">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleExecute}
+                className="px-4 py-1.5 text-sm font-semibold rounded-md bg-gradient-to-r from-red-600 to-red-500 text-white hover:from-red-700 hover:to-red-600 transition-all shadow-sm"
               >
-                No results yet...
-              </motion.div>
-            )}
-          </AnimatePresence>
+                Run Workflow
+              </motion.button>
+            </div>
+          </div>
         </div>
-
-        <div className="border-t border-gray-200 flex items-center justify-end px-4 py-2 bg-white">
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={handleExecute}
-            className="px-4 py-1.5 text-sm font-semibold rounded-md bg-gradient-to-r from-red-600 to-red-500 text-white hover:from-red-700 hover:to-red-600 transition-all shadow-sm"
-          >
-            Run Workflow
-          </motion.button>
-        </div>
-      </div>
-    </div>  
-
-
       </div>
 
       {firstNodemodal && (
