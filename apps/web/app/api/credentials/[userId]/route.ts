@@ -81,10 +81,12 @@ export const POST = async (
         userId,
         apiKey: encryptedAPI,
         Provider: validInputs.data.provider,
+        name:validInputs.data.name
       },
       select:{
         id:true,
-        Provider:true
+        Provider:true,
+        name:true
       }
     });
 

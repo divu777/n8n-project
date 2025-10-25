@@ -24,6 +24,7 @@ model User{
 
 model Credentials{
   id String @id @default(uuid())
+  name String 
   apiKey String
   Provider LLMProvider
   userId String
@@ -67,9 +68,9 @@ model Edge{
   workflow Workflow @relation(fields: [workflowId],references: [id], onDelete: Cascade)
   sourceId String
   
-  source Node @relation("EdgeSource",fields: [sourceId,workflowId],references: [nodeId,workflowId])
+  source Node @relation("EdgeSource",fields: [sourceId,workflowId],references: [nodeId,workflowId],onDelete: Cascade)
   targetId String
-  target Node @relation("EdgeTarget",fields: [targetId,workflowId],references: [nodeId,workflowId])
+  target Node @relation("EdgeTarget",fields: [targetId,workflowId],references: [nodeId,workflowId],onDelete: Cascade)
 
   @@index([workflowId])
 }

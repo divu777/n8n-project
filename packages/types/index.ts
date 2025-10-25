@@ -15,7 +15,8 @@ export const UserSchema = z.object({
 
 export const NewCredentialsSchema = z.object({
     provider: z.enum(["OpenAI","Anthropic","Gemini"]),
-    api_key:z.string()
+    api_key:z.string(),
+    name:z.string()
 }
 )
 

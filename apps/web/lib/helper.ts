@@ -185,13 +185,18 @@ export const callLLM=async(config:{
         success:false
       }
     }
-    process.env.OPENAI_API_KEY= decrypt(credentials.apiKey)
+    const apiKey = decrypt(credentials.apiKey)
     //console.log(process.env.OPENAI_API_KEY+"----->api key")
     const llm = await initChatModel(config.model,{
       modelProvider:(credentials.Provider).toLowerCase(),
+      configurableFields:['apiKey']
     })
   
-    const response = await llm.invoke(config.messages)
+    const response = await llm.invoke(config.messages,{
+      configurable:{
+        apiKey
+      }
+    })
   
    // console.log("response-----"+JSON.stringify(response))
   

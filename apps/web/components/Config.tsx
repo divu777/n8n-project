@@ -11,8 +11,8 @@ interface Message {
 
 const MODELS: Record<string, string[]> = {
   OpenAI: ["gpt-3.5-turbo", "gpt-4", "gpt-4o"],
-  Anthropic: ["Claude-2", "Claude-Instant", "Claude-Next"],
-  Gemini: ["Gemini Pro", "Gemini Ultra", "Gemini Light"],
+  Anthropic: ["claude-sonnet-4-5", "claude-haiku-4-5", "claude-opus-4-1"],
+  Gemini: ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite","gemini-2.0-flash"],
 };
 
 const LLM_PROVIDERS = Object.keys(MODELS);
@@ -32,6 +32,7 @@ const Config = ({
   const [selectedModel, setSelectedModel] = useState("");
   const [addnewCred, setaddNewCred] = useState(false);
   const { apiKeys, setApiKeys } = useCredentials(session.data?.user.id);
+  console.log(JSON.stringify(apiKeys)+"----->")
   const [messages, setMessages] = useState<Message[]>([
     { role: "user", content: "" },
   ]);
@@ -102,7 +103,7 @@ const Config = ({
                   value={key.id}
                   data-provider={key.Provider}
                 >
-                  {key.Provider}
+                  {key.name}
                 </option>
               ))}
               <option value="Add new credentials...">
@@ -114,6 +115,7 @@ const Config = ({
           {/* Adding New Credentials */}
           {addnewCred && (
             <AddCredentials
+              apiKeys={apiKeys}
               setApiKeys={setApiKeys}
               llmProviders={LLM_PROVIDERS}
               setaddNewCred={setaddNewCred}

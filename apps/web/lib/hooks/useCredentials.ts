@@ -5,6 +5,7 @@ interface Credential {
   id: string;
   Provider: string;
   api_key: string;
+  name:string
 }
 
 export const useCredentials = (userId?: string) => {
