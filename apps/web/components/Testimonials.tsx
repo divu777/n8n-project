@@ -19,7 +19,7 @@ const AnimatedNumber = ({ targetNumber }: { targetNumber: number }) => {
 
   return (
     <span className="tabular-nums transition-all duration-500">
-      {number.toLocaleString()}
+  {number.toLocaleString('en-US')}
     </span>
   );
 };

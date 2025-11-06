@@ -118,8 +118,13 @@ export const PUT = async(req:NextRequest)=>{
                 }
             },
             data:{
-                config:body.config
+                ...body
             }
+        })
+
+        return NextResponse.json({
+            message:"Done updating the node",
+            success:true
         })
     } catch (error) {
         console.log("Error in updating the nodes: "+error);
@@ -130,7 +135,7 @@ export const PUT = async(req:NextRequest)=>{
     }
 }
 
-import z from 'zod'
+import z, { success } from 'zod'
  const deleteNodeSchema = z.object({
     workflowId:z.string(),
     nodes:z.array(z.object({
@@ -153,8 +158,8 @@ export const DELETE=async(req:NextRequest)=>{
             })
         }
 
-        validInputs.data.nodes.map(async(node)=>{
-            await prisma.node.delete({
+       const response =await Promise.all(validInputs.data.nodes.map((node)=>(
+             prisma.node.delete({
                 where:{
                     workflowId_nodeId:{
 
@@ -163,7 +168,7 @@ export const DELETE=async(req:NextRequest)=>{
                     }
                 }
             })
-        })
+       )))
 
         return NextResponse.json({
             message:"Deleted all the nodes",

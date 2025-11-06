@@ -34,23 +34,13 @@ const nodeTypes = {
 export default function App() {
   const { workflowId } = useParams();
   const [workflowResult, setWorkflowResult] = useState<Record<string, any>>({});
-  interface Nodes {
-    id: string;
-    nodeId: string;
-    type: string;
-    xCoordinate: number;
-    yCoordinate: number;
-    data: JSON;
-    config?: string;
-  }
-
-  type nodesType = {
-    id: string;
-    type: string;
-    data: {
-      hasChild: boolean;
-    };
-  };
+  const [nodes, setNodes] = useState<any[]>([]);
+  const [firstNodemodal, setFirseNodeModal] = useState(false);
+  const [addNewNodemodal, setAddNewNodeModal] = useState(false);
+  const [edges, setEdges] = useState<any[]>([]);
+  const [showConfig, setShowConfig] = useState(false);
+  const [selectedNodeType, setSelectedNodeType] = useState<string | null>(null);
+  const [lastExecutedNode, setLastExecutedNode] = useState<string | null>(null);
 
   const fetchWorflowData = async () => {
     const { data } = await axios.get(
@@ -126,8 +116,6 @@ export default function App() {
     //  console.log(JSON.stringify(data) + "---------g-");
   };
 
-  const [lastExecutedNode, setLastExecutedNode] = useState<string | null>(null);
-
   const handleExecute = async () => {
     setWorkflowResult({});
     const res = await fetch(
@@ -137,7 +125,6 @@ export default function App() {
     const decoder = new TextDecoder();
     let buffer = "";
 
-    const results: Record<string, any> = {};
 
     while (true) {
       const { value, done } = await reader.read();
@@ -151,13 +138,10 @@ export default function App() {
         const data = JSON.parse(part);
 
         if (data.event === "node-result") {
-          // results[data.nodeId] = data.result;
-          // setWorkflowResult({ ...results });
           setWorkflowResult((prev) => {
-            const existingLogs = prev[data.nodeId] || [];
             return {
               ...prev,
-              [data.nodeId]: [...existingLogs, data.result],
+              [data.nodeId]: [data.result],
             };
           });
           setLastExecutedNode(data.nodeId);
@@ -169,13 +153,6 @@ export default function App() {
   useEffect(() => {
     fetchWorflowData();
   }, []);
-
-  const [nodes, setNodes] = useState<any[]>([]);
-  const [firstNodemodal, setFirseNodeModal] = useState(false);
-  const [addNewNodemodal, setAddNewNodeModal] = useState(false);
-  const [edges, setEdges] = useState<any[]>([]);
-  const [showConfig, setShowConfig] = useState(false);
-  const [selectedNodeID, setSelectedNodeId] = useState<string | null>(null);
 
   const handlSaveNodeConfig = async (data?: any) => {
     let newNodeId = `n${nodes.length + 1}`;
@@ -194,7 +171,7 @@ export default function App() {
         hasChild: false,
         setAddNewNodeModal,
       },
-      type: selectedNodeID,
+      type: selectedNodeType,
     };
     setNodes((prev) => {
       const updatedNodes = prev.map((n) =>
@@ -208,8 +185,8 @@ export default function App() {
     setEdges((prev: any[]) => [
       ...prev,
       {
-        id: `${selectedNode?.id || `n${nodes.length}`}-${newNodeId}`,
-        source: selectedNode?.id || `n${nodes.length}`,
+        id: `${selectedNode.id || `n${nodes.length}`}-${newNodeId}`,
+        source: selectedNode.id || `n${nodes.length}`,
         target: newNodeId,
       },
     ]);
@@ -223,7 +200,7 @@ export default function App() {
           nodeId: newNode.id,
           xCoordinate: newX,
           yCoordinate: newY,
-          type: selectedNodeID,
+          type: selectedNodeType,
           workflowId,
           data: {
             hasChild: false,
@@ -247,12 +224,6 @@ export default function App() {
     }
   };
 
-  //   useEffect(()=>{
-  //   console.log(JSON.stringify(edges)+"-------edg"),
-  //     console.log(JSON.stringify(nodes)+"-------nodeee")
-
-  // },[edges,nodes])
-
   useEffect(() => {
     setNodes((nds) =>
       nds.map((n) => ({
@@ -267,7 +238,7 @@ export default function App() {
 
   const handleNewNode = (data: { id: any }) => {
     setShowConfig(true);
-    setSelectedNodeId(data.id);
+    setSelectedNodeType(data.id);
   };
 
   const handleFirstNode = async (data: {
@@ -359,10 +330,14 @@ export default function App() {
   };
 
   const onNodesChange = useCallback((changes: NodeChange<any>[]) => {
-    //     console.log(JSON.stringify(changes)+"------nodes changes ")
+    // console.log(JSON.stringify(changes)+"------nodes changes ")
 
     setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot));
   }, []);
+
+  // const onNodeDrag = useCallback((node:any,event)=>{
+  //     // console.log(JSON.stringify(node) +"--------->"+ JSON.stringify(event)+"------dragg")
+  // },[])
 
   const onEdgesChange = useCallback((changes: EdgeChange<any>[]) => {
     // console.log(JSON.stringify(changes)+"------edges changes ")
@@ -393,6 +368,26 @@ export default function App() {
     // alert("Workflow saved!");
   };
 
+  // const onNodeDragStart = (event, node) => console.log('drag start', node);
+  const onNodeDragStop = async (event: any, node: any) => {
+    const { data } = await axios.put(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/node`,
+      {
+        workflowId: workflowId,
+        nodeId: node.id,
+        xCoordinate: node.position.x,
+        yCoordinate: node.position.y,
+      }
+    );
+  };
+
+  const onNodeDoubleClick = async (_:any,node:any)=>{
+    console.log(JSON.stringify(node)+"----clicked")
+    setShowConfig(true)
+  }
+
+
+
   return (
     <div className="w-screen h-screen flex">
       <Sidebar />
@@ -418,11 +413,9 @@ export default function App() {
           </button>
         </div>
 
-        {/* 🔹 ReactFlow Editor (middle) */}
-        <div
-          style={{ flex: 1, width: "100%", height: "100%", overflow: "hidden" }}
-          className="relative"
-        >
+        {/* ReactFlow Editor (middle) */}
+          <div className="flex-1 overflow-hidden">
+
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -432,6 +425,8 @@ export default function App() {
             nodeTypes={nodeTypes}
             onEdgesDelete={handleDeleteEdges}
             onNodesDelete={handleDeleteNodes}
+            onNodeDragStop={onNodeDragStop}
+            onNodeDoubleClick={onNodeDoubleClick}
             panOnScroll
             selectionOnDrag
             fitView
@@ -442,10 +437,8 @@ export default function App() {
           </ReactFlow>
         </div>
 
-        <div
-          style={{ height: "28%", width: "100%" }}
-          className="border-t border-gray-200 bg-gray-50 flex shadow-inner"
-        >
+          <div className="min-h-[180px] max-h-[40%] overflow-y-auto border-t border-gray-200 flex shadow-inner">
+
           <div className="w-1/3 border-r border-gray-200 overflow-y-auto p-4 bg-white">
             <h2 className="text-sm font-semibold text-gray-700 mb-3">
               Nodes in Workflow
@@ -454,10 +447,10 @@ export default function App() {
               {nodes.map((n: any) => (
                 <motion.li
                   key={n.id}
-                  onClick={() => setSelectedNodeId(n.id)}
+                  onClick={() => setSelectedNodeType(n.id)}
                   whileHover={{ scale: 1.02 }}
                   className={`px-3 py-1.5 rounded-md text-sm cursor-pointer transition-all duration-200 ${
-                    selectedNodeID === n.id
+                    selectedNodeType === n.id
                       ? "bg-red-100 text-red-700 font-medium"
                       : "hover:bg-gray-100 text-gray-700"
                   }`}

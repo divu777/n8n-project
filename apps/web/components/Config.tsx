@@ -32,7 +32,6 @@ const Config = ({
   const [selectedModel, setSelectedModel] = useState("");
   const [addnewCred, setaddNewCred] = useState(false);
   const { apiKeys, setApiKeys } = useCredentials(session.data?.user.id);
-  console.log(JSON.stringify(apiKeys)+"----->")
   const [messages, setMessages] = useState<Message[]>([
     { role: "user", content: "" },
   ]);
