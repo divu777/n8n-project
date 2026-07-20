@@ -2,13 +2,31 @@ import prisma from "@/app/db";
 import { encrypt } from "@/lib/helper";
 import { NewCredentialsSchema } from "@repo/types";
 import { NextRequest, NextResponse } from "next/server";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
 
 export const GET = async (
   _: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) => {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user || !session.user.id) {
+      return NextResponse.json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
     const { userId } = await params;
+
+    if (userId !== session.user.id) {
+      return NextResponse.json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
 
     const userExist = await prisma.user.findUnique({
       where: {
@@ -45,7 +63,23 @@ export const POST = async (
   { params }: { params: Promise<{ userId: string }> }
 ) => {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user || !session.user.id) {
+      return NextResponse.json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
     const userId = (await params).userId;
+
+    if (userId !== session.user.id) {
+      return NextResponse.json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
 
     const body = await _.json();
 

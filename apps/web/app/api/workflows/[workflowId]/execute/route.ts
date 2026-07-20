@@ -1,14 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from '@/app/db';
 import { runExecution, runExecutionstreamable } from '@/lib/helper';
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
 
 export const GET = async(_:NextRequest,{params}:{params:Promise<{workflowId:string}>})=>{
     try {
+        const session = await getServerSession(authOptions)
+
+        if(!session || !session.user || !session.user.id){
+            return NextResponse.json({
+                message:"Unauthorized",
+                success:false
+            })
+        }
+
         const {workflowId} = await params
 
         const workflowExist = await prisma.workflow.findUnique({
             where:{
-                id:workflowId
+                id:workflowId,
+                userId:session.user.id
             },
             select:{
                 edges:true,

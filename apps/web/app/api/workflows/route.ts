@@ -43,11 +43,18 @@ export const GET = async (_: NextRequest) => {
 
 export const POST = async (req: NextRequest) => {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user || !session.user.id) {
+      return NextResponse.json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
     const body = await req.json();
 
-    
-
-    const validInputs = NewWorflowSchema.safeParse(body);
+    const validInputs = NewWorflowSchema.safeParse({ ...body, userId: session.user.id });
 
     if (!validInputs.success) {
       return NextResponse.json({
