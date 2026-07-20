@@ -3,10 +3,8 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: mysupersecretpassword
-      POSTGRES_DB: agents
+    env_file:
+      - apps/web/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
