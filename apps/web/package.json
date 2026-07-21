@@ -11,7 +11,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@langchain/core": "^0.3.77",
+    "@langchain/core": "0.3.77",
     "@langchain/langgraph": "^0.4.9",
     "@langchain/openai": "^0.6.14",
     "@prisma/client": "^6.16.1",
